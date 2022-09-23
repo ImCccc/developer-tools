@@ -1,0 +1,97 @@
+.main {
+  &-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+    background: #efefef;
+    .ant-collapse {
+      margin-top: 20px;
+    }
+    .ant-collapse:first-child {
+      margin-top: 0;
+    }
+    > div {
+      width: 100%;
+      max-width: 900px;
+    }
+  }
+
+  &-title {
+    padding: 10px 0;
+    font-weight: 700;
+    border-bottom: 1px solid #ccc;
+  }
+
+  &-item {
+    display: flex;
+    padding: 10px 0;
+  }
+
+  &-label {
+    width: 100px;
+    flex-shrink: 0;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+  }
+
+  &-col {
+    flex-grow: 1;
+  }
+
+  &-input {
+    max-width: 135px;
+  }
+
+  &-colitem {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 16px;
+  }
+
+  &-colitem-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    > .ant-select,
+    > input {
+      margin-right: 20px;
+    }
+    > button {
+      flex-shrink: 0;
+      margin-left: 10px;
+    }
+  }
+
+  &-colitem-right {
+    flex-shrink: 0;
+  }
+
+  &-comp-w {
+    flex-shrink: 0;
+    width: 135px !important;
+  }
+
+  &-fold {
+    width: 90%;
+    padding-top: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  &-fold-title {
+    margin-right: 10px;
+  }
+
+  &-oper-btn {
+    width: 120px !important;
+    margin-right: 10px !important;
+  }
+}

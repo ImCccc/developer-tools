@@ -1,0 +1,28 @@
+{
+  "name": "lcr-tools-service",
+  "version": "2.2.0",
+  "description": "生成页面的开发者工具-服务端",
+  "license": "MIT",
+  "authors": {
+    "name": "lcr",
+    "email": "306022598@qq.com"
+  },
+  "main": "./src/main.js",
+  "files": [
+    "src",
+    "test"
+  ],
+  "scripts": {
+    "deps": "yarn upgrade-interactive"
+  },
+  "bin": {
+    "dev-service-start": "src/main.js"
+  },
+  "author": "lcr",
+  "dependencies": {
+    "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^12.0.0",
+    "koa-static": "^5.0.0"
+  }
+}
