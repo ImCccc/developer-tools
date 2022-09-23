@@ -1,0 +1,65 @@
+function htmlTransformByDevTools() {
+  return {
+    apply: "serve",
+    name: "html-transform",
+    transformIndexHtml: (html) =>
+      html.replace(
+        "</body>",
+        `<style>
+          ._tool-center {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          #dev-tool {
+            position: fixed;
+            z-index: 100;
+            right: 30px;
+            bottom: 30px;
+            background: #3f51b5;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: #fff;
+            cursor: pointer;
+          }
+          #dev-tool:hover {
+            background: #3f51b59e;
+          }
+          #dev-iframe {
+            width: 960px;
+            height: 500px;
+          }
+          #dev-modal {
+            left: 0;
+            top: 0;
+            position: fixed;
+            z-index: 1000;
+            height: 100%;
+            width: 100%;
+            background-color: #00000073;
+          }
+        </style>
+        <span id="dev-tool" class="_tool-center">tool</span>
+        <div id="dev-modal" style="display: none" class="_tool-center">
+          <iframe id="dev-iframe" frameborder="0"></iframe>
+        </div>
+        <script type="module">
+          const iframe = document.getElementById("dev-iframe");
+          document.getElementById("dev-tool").addEventListener("click", () => {
+            modal.style.display = "";
+            iframe.src =
+              "http://localhost:3030?hash=" + location.hash.replace("#", "");
+          });
+          const modal = document.getElementById("dev-modal");
+          modal.addEventListener("click", () => {
+            modal.style.display = "none";
+            iframe.src = "";
+          });
+        </script>
+      </body>`
+      ),
+  };
+}
+exports.htmlTransformByDevTools = htmlTransformByDevTools;
