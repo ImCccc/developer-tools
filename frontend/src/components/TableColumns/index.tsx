@@ -1,13 +1,11 @@
-import { Button, Input, Modal, Radio, Select } from 'antd';
+import { Input, Radio, Select } from 'antd';
 import DeleteButton from '@/components/DeleteButton';
 import { updateObjectByString } from '@/utils/util';
+import ConfigLayout from '@/components/ConfigLayout';
+import TypeToList from '@/components/TypeToList';
 import ButtonList from '@/components/ButtonList';
 import AddButton from '@/components/AddButton';
-import ConfigLayout from '@/components/ConfigLayout';
 import Tip from '@/components/Tip';
-import { useState } from 'react';
-
-const { TextArea } = Input;
 
 export type ColumnsProps = {
   title: string;
@@ -47,62 +45,6 @@ const timeFormatList = [
   { label: 'YYYY-MM-DD HH:mm:ss', value: 'YYYY-MM-DD HH:mm:ss' },
 ];
 
-const placeholderTips = `输入列的ts类型, 严格按照例子的格式:  
-  type smzxAppUpgrade =  {
-    /** 应用版本id */
-    'id': string;
-    /** 应用版本名称 */
-    'name': string;
-    /** 创建毫秒时间戳 */
-    'date_created': number;
-  }`;
-
-const tsTypeToColumn = (typeString: string) => {
-  let columnsTypes = '';
-
-  typeString = typeString.replace(/\s/g, '');
-
-  let index = typeString.indexOf('{');
-  if (index > -1) {
-    columnsTypes = typeString.slice(0, index - 1);
-
-    if (columnsTypes.startsWith('type')) {
-      columnsTypes = columnsTypes.slice(4);
-    }
-
-    if (columnsTypes.startsWith('interface')) {
-      columnsTypes = columnsTypes.slice(9);
-    }
-
-    typeString = typeString.slice(index + 1);
-  }
-
-  index = typeString.indexOf('}');
-  if (index > -1) {
-    typeString = typeString.slice(0, index);
-  }
-
-  const cloumnsArray = typeString.split(';');
-  if (!cloumnsArray.length[cloumnsArray.length - 1]) {
-    cloumnsArray.pop();
-  }
-
-  const cloumns = cloumnsArray.reduce((cloumns, str) => {
-    const data = str.replace('/**', '').split('*/');
-    // 得到注释 /** 应用版本id */ 中的 "应用版本id"
-    const title = data[0];
-    // 此时得到: 'version':number
-    const column = (data.length > 1 ? data[1] : data[0])
-      .replace(/'|"/g, '')
-      .split(':');
-    const dataIndex = column[0];
-    cloumns.push({ title, dataIndex });
-    return cloumns;
-  }, [] as ColumnsProps[]);
-
-  return { columnsTypes, cloumns };
-};
-
 const Comp: React.FC<TableColumnsProps> = ({ onChange, columnsConfig }) => {
   const { columns, columnsTypes } = columnsConfig;
 
@@ -110,47 +52,9 @@ const Comp: React.FC<TableColumnsProps> = ({ onChange, columnsConfig }) => {
     onChange(updateObjectByString(columnsConfig, keys, value));
   };
 
-  const [types, setTypes] = useState<string>('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const handleOk = () => {
-    setIsModalOpen(false);
-    if (types) {
-      const { cloumns, columnsTypes } = tsTypeToColumn(types);
-      if (cloumns && cloumns.length) {
-        const cloneData = { ...columnsConfig };
-        cloneData.columns = cloumns;
-        cloneData.columnsTypes = columnsTypes;
-        onChange(cloneData);
-      }
-    }
-    setTypes('');
-  };
-
   return (
     <ConfigLayout title="table列配置">
-      <>
-        <Button
-          ghost
-          type="primary"
-          onClick={() => setIsModalOpen(true)}
-          style={{ position: 'absolute', right: '16px', top: '16px' }}
-        >
-          ts 转列
-        </Button>
-        <Modal
-          title="TS 类型转列"
-          open={isModalOpen}
-          onOk={handleOk}
-          onCancel={() => setIsModalOpen(false)}
-        >
-          <TextArea
-            rows={10}
-            value={types}
-            placeholder={placeholderTips}
-            onChange={(e) => setTypes(e.target.value)}
-          />
-        </Modal>
-      </>
+      <TypeToList onChange={(config) => onChange(config)} />
       <div className="main-item flex-center">
         <div className="main-label">
           <Tip url="/imgs/3.png" />

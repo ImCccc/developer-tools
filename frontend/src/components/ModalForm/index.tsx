@@ -5,6 +5,7 @@ import ConfigLayout from '@/components/ConfigLayout';
 import { ButtonProps } from '@/components/OperButtons';
 import AddButton from '@/components/AddButton';
 import { useCallback, useMemo } from 'react';
+import TypeToList from '@/components/TypeToList';
 import DeleteButton from '@/components/DeleteButton';
 
 export type FieldType =
@@ -85,6 +86,18 @@ const Comp: React.FC<ModalFormsProps> = ({
 
   return (
     <ConfigLayout title="弹窗的表单配置">
+      <TypeToList
+        onChange={({ columns }) => {
+          update(
+            'formFields',
+            columns.map((col) => ({
+              name: col.dataIndex,
+              label: col.title,
+              isRequired: true,
+            })),
+          );
+        }}
+      />
       <div className="main-item">
         <div className="main-label self-start">
           <Tip url="/imgs/8.jpg" />
