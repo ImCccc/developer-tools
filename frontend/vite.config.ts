@@ -1,7 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { createStyleImportPlugin } from 'vite-plugin-style-import';
-import { htmlTransformByDevTools } from 'vite-plugin-dev-tool';
 
 export default defineConfig({
   plugins: [
@@ -16,9 +15,6 @@ export default defineConfig({
         },
       ],
     }),
-
-    // 使用开发者工具
-    htmlTransformByDevTools(),
   ],
 
   css: {
