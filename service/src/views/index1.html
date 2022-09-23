@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>node-js</title>
+  </head>
+  <body>
+    <div id="root">
+      <button onclick="test()">测试按钮</button>
+      <button onclick="test2()">测试按钮2</button>
+    </div>
+    <script>
+      const request = (url, params, method = 'POST') =>
+        new Promise((resolve, reject) => {
+          fetch(url, {
+            method,
+            body: JSON.stringify(params || {}),
+            headers: { 'Content-Type': 'application/json' },
+          })
+            .then((res) => {
+              if (res.status === 404) {
+                return {
+                  code: res.status,
+                  message: '找不到资源',
+                };
+              }
+              if (res.status === 500) {
+                return {
+                  code: res.status,
+                  message: '服务器报错',
+                };
+              }
+              return res.json();
+            })
+            .then((res) => {
+              if (res.code === 200) {
+                return resolve(res.data);
+              } else {
+                console.error(res);
+                return reject(res);
+              }
+            })
+            .catch((error) => reject(error));
+        });
+
+      const allConfig = {
+        menuRouteConfig: {
+          menuName: '菜单管理',
+          folderName: 'xxxxss',
+          routePath: '/routePath/xxxx',
+        },
+        columnsConfig: {
+          columnsTypes: 'SMZX.smzxAppUpgrade',
+          columns: [
+            {
+              title: '版本名',
+              dataIndex: 'name',
+            },
+            {
+              title: '设备类型',
+              dataIndex: 'product_id',
+              type: 'render',
+            },
+            {
+              title: '上传时间',
+              dataIndex: 'date_created',
+              type: 'date',
+              timeFormat: 'YYYY-MM-DD HH:mm:ss',
+            },
+            {
+              title: '操作',
+              type: 'oper',
+              buttons: [{ label: '删除' }, { label: '编辑' }],
+            },
+          ],
+        },
+        tableConfig: {
+          hasTableRef: true,
+          serviceName: 'AppUpgradeServicePage',
+          servicePath: 'smzx/AppUpgradeService',
+        },
+        bottonsConfig: [{ label: '新增' }, { label: '删除' }],
+        modalFormConfig: {
+          correlationBtn: '新增',
+          formFields: [
+            {
+              name: 'name',
+              label: '版本名称',
+              isRequired: true,
+            },
+            {
+              name: 'name',
+              label: '版本名称',
+              isRequired: true,
+              type: 'Select',
+            },
+            {
+              name: 'app_url',
+              label: '上传应用',
+              isRequired: true,
+              type: 'Upload',
+            },
+          ],
+        },
+        searchFieldConfig: [
+          {
+            label: '输入框',
+            type: 'Input',
+            key: 'xxx12222',
+          },
+          {
+            label: '下拉框多选',
+            type: 'Multiple',
+            key: 'multiple',
+          },
+          {
+            label: '日期',
+            type: 'DatePicker',
+            key: 'xxx3',
+          },
+          {
+            label: '日期范围',
+            type: 'RangePicker',
+            key: 'xxx4',
+          },
+        ],
+      };
+
+      function test() {
+        request('/add-page/table', allConfig).then((data) => {
+          console.log('创建成功。。。。。');
+        });
+      }
+
+      function test2() {
+        request('/test').then((data) => {
+          console.log('创建成功。。。。。');
+        });
+      }
+    </script>
+  </body>
+</html>

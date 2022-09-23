@@ -1,6 +1,6 @@
 {
   "name": "lcr-tools-service",
-  "version": "2.2.0",
+  "version": "2.7.0",
   "description": "生成页面的开发者工具-服务端",
   "license": "MIT",
   "authors": {
