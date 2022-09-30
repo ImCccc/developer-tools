@@ -1,0 +1,100 @@
+@import '../../styles/var.less';
+
+@menu-width: 30rem;
+
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f0f2f5;
+  > div {
+    flex-shrink: 0;
+  }
+}
+
+.main {
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 0;
+  height: calc(100vh - 5.8rem);
+  > div {
+    height: 100%;
+  }
+}
+
+.menuwrap {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  max-width: @menu-width;
+}
+
+.menu {
+  flex-grow: 1;
+  width: @menu-width;
+  overflow: auto;
+  overflow-x: hidden;
+  :global(.ant-menu-item) {
+    margin-top: 0;
+  }
+}
+
+.m_title {
+  width: @menu-width;
+  height: 8rem;
+  padding-left: 3rem;
+  color: #fff;
+  font-size: @font-size-large;
+  line-height: 8rem;
+  background: #001529;
+  cursor: pointer;
+}
+
+.h_container {
+  display: flex;
+  justify-content: space-between;
+  height: 7rem;
+  padding: 0 2rem;
+  color: #fff;
+  background: #001529;
+  .h_left {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  .h_title {
+    font-size: @font-size-large;
+  }
+}
+
+.h_right {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  cursor: pointer;
+}
+
+.h_name {
+  margin-left: 2rem;
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  .c_header {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 2rem;
+    background: #fff;
+  }
+}
