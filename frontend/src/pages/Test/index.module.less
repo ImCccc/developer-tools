@@ -1,0 +1,21 @@
+.page {
+  display: flex;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.side {
+  flex-shrink: 0;
+  padding: 10px;
+  margin: 10px;
+  > div {
+    margin-bottom: 20px;
+  }
+}
+
+.content {
+  flex-grow: 1;
+  overflow: auto;
+}

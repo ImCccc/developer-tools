@@ -1,57 +1,48 @@
 // 拖动的组件
-import React, { CSSProperties } from 'react';
+import React, { useMemo } from 'react';
 import { useDrag } from 'react-dnd';
+import DropId from '@/stores';
+import { observer } from 'mobx-react-lite';
 
-type CopmProps = {
-  type: string;
-  id?: string;
-  disabled?: boolean;
-  begin?: (param?: any) => void;
-  end?: (param?: any) => void;
-  style?: CSSProperties;
-  [key: string]: any;
-};
-
-const Drag: React.FC<CopmProps> = ({
+const Drag: React.FC<Global.DragProps> = ({
   disabled,
+  className,
   children,
-  begin,
-  id,
-  type,
   end,
-  style,
-  ...props
+  begin,
+  data,
 }) => {
+  const type = useMemo(() => data.type, [data]);
+
   const [, drager] = useDrag({
-    type,
+    type: type,
 
     item: () => {
-      console.log('useDrag item..........');
-      begin?.(type);
-      return { type };
+      begin?.({ ...data });
+      return { ...data };
     },
 
     end: () => {
-      console.log('useDrag end..........');
-      end?.({ type });
+      end?.({ ...data });
+      DropId.id = '';
     },
 
     // true 代码能拖拽, false 不能拖拽
     canDrag: () => {
+      if (data.canDrag === false) return false;
       return !disabled;
     },
   });
 
   return (
     <div
-      id={id}
-      {...props}
-      style={{ ...style, cursor: disabled ? 'no-drop' : 'move' }}
       ref={drager}
+      className={className}
+      style={{ cursor: disabled ? 'no-drop' : 'move' }}
     >
       {children}
     </div>
   );
 };
 
-export default Drag;
+export default observer(Drag);

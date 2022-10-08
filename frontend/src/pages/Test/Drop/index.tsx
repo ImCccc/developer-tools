@@ -1,47 +1,59 @@
 // react dnd api: https://react-dnd.github.io/react-dnd/docs/api/drop-target-monitor/
 // 放置拖动的组件
-import classNames from 'classnames';
-import React, { CSSProperties, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { useDrop } from 'react-dnd';
+import classNames from 'classnames';
+import DropId from '@/stores';
+import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
 
-type Node_Props = any;
-
-type CopmProps = {
-  id?: string;
-  accept?: string[];
-  style?: CSSProperties;
-  drop?: (props: Node_Props, monitor?: any, element?: HTMLDivElement) => void;
-  hover?: (props?: Node_Props, monitor?: any, element?: HTMLDivElement) => void;
-  className?: string;
-  [key: string]: any;
-};
-
-const Comp: React.FC<CopmProps> = ({
-  drop,
-  hover,
-  accept = [],
-  children,
-  id,
+const Comp: React.FC<Global.DropProps> = ({
+  data,
   style,
+  drop,
+  children,
   className,
 }) => {
+  const id = useMemo(() => data.id, [data]);
+
   const dropRef = useRef<HTMLDivElement>(null);
 
-  const [, droper] = useDrop<Node_Props>({
+  // 用于判断当前移动的元素，是否包含目标元素
+  const isChildren = useRef<boolean>(false);
+
+  const [, droper] = useDrop<Global.DragComponentProps>({
     // 能接受什么东西
-    accept,
+    accept: data.accept || ['Item1', 'Item2', 'Item3', 'Item4'],
 
     // 有东西来了, 会不断触发, props 就是拖动组件传递过来的数据
     hover: (props, monitor) => {
       if (!dropRef.current) return;
-      hover?.(props, monitor, dropRef.current);
+
+      if (monitor.isOver({ shallow: true })) {
+        isChildren.current = false;
+
+        let parent = data.parent;
+        while (parent) {
+          if (parent.id === props.id) {
+            isChildren.current = true;
+            break;
+          }
+          parent = parent.parent;
+        }
+
+        if (isChildren.current === false) {
+          DropId.id = data.id;
+        }
+      }
     },
 
     // 东西放下了, 触发一次, props 就是拖动组件传递过来的数据
     drop: (props, monitor) => {
-      // console.log('useDrop 东西放下了.........', monitor);
-
+      // 如果移动到自己的子元素中，那么不处理
+      if (monitor.isOver({ shallow: true }) && isChildren.current === false) {
+        drop && drop(data, props);
+      }
+      DropId.id = '';
       /*
         判断当前放置的目标，是否在组件的上方，
         例子: 组件A, 嵌套组件B, A 和 B 都能放置目标, 如果拖动目标放在组件B上, 那么:
@@ -94,11 +106,10 @@ const Comp: React.FC<CopmProps> = ({
 
       // console.log(dropRef.current?.getBoundingClientRect());
       // console.log(monitor);
-      drop?.(props);
     },
 
     // 可以判断组件能否下, 会不断触发, props 就是拖动组件传递过来的数据
-    canDrop: (props, monitor) => {
+    canDrop: () => {
       return true;
     },
   });
@@ -107,11 +118,12 @@ const Comp: React.FC<CopmProps> = ({
 
   return (
     <div
-      id={id}
       style={style}
       ref={dropRef}
-      className={classNames(styles.wrap, className, {
+      className={classNames(className, {
         [styles.empty]: !children,
+        [styles.active]: DropId.id === id,
+        [styles.drop]: data.canDrop,
       })}
     >
       {children}
@@ -120,4 +132,4 @@ const Comp: React.FC<CopmProps> = ({
   );
 };
 
-export default Comp;
+export default observer(Comp);
