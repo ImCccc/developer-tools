@@ -13,6 +13,7 @@ const Comp: React.FC<Global.DropProps> = ({
   drop,
   children,
   className,
+  direction = 'column',
 }) => {
   const id = useMemo(() => data.id, [data]);
 
@@ -51,7 +52,7 @@ const Comp: React.FC<Global.DropProps> = ({
     drop: (props, monitor) => {
       // 如果移动到自己的子元素中，那么不处理
       if (monitor.isOver({ shallow: true }) && isChildren.current === false) {
-        drop && drop(data, props);
+        drop && drop(data, props, monitor);
       }
       DropId.id = '';
       /*
@@ -120,11 +121,15 @@ const Comp: React.FC<Global.DropProps> = ({
     <div
       style={style}
       ref={dropRef}
-      className={classNames(className, {
-        [styles.empty]: !children,
-        [styles.active]: DropId.id === id,
-        [styles.drop]: data.canDrop,
-      })}
+      className={classNames(
+        {
+          [styles.empty]: !children,
+          [styles.active]: DropId.id === id,
+          [styles.drop]: data.canDrop,
+        },
+        className,
+        styles[direction],
+      )}
     >
       {children}
       {!children && <span className={styles.add}>请将组件拖到这里</span>}

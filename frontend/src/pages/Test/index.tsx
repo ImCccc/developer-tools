@@ -6,6 +6,14 @@ import Drag from './Drag';
 import Drop from './Drop';
 import styles from './index.module.less';
 
+const types: Global.ComponentTypes[] = [
+  'Item1',
+  'Item2',
+  'Item3',
+  'Item4',
+  'Item5',
+];
+
 const Item1: React.FC = () => (
   <div style={{ border: '1px solid red', height: '30px' }}>拖动组件1</div>
 );
@@ -19,7 +27,11 @@ const Item3: React.FC = () => (
 );
 
 const Item4: React.FC = () => (
-  <div style={{ border: '1px solid red', padding: '40px' }}>布局组件</div>
+  <div style={{ border: '1px solid red', padding: '40px' }}>列布局组件</div>
+);
+
+const Item5: React.FC = () => (
+  <div style={{ border: '1px solid red', padding: '40px' }}>行布局组件</div>
 );
 
 const componentsObject = {
@@ -27,6 +39,7 @@ const componentsObject = {
   Item2,
   Item3,
   Item4,
+  Item5,
 };
 
 const conponentList: Global.DragComponentProps[] = [
@@ -46,9 +59,16 @@ const conponentList: Global.DragComponentProps[] = [
     canDrop: false,
   },
   {
-    type: 'Item4', // 组件类型
+    type: 'Item4',
     canDrag: true,
     canDrop: true,
+    direction: 'column',
+  },
+  {
+    type: 'Item5',
+    canDrag: true,
+    canDrop: true,
+    direction: 'row',
   },
 ];
 
@@ -58,7 +78,7 @@ const getDefaultValue = () => {
       id: '1',
       canDrag: false, // 能否拖动
       canDrop: true, // 能否放置拖动组件
-      accept: ['Item1', 'Item2', 'Item3', 'Item4'],
+      accept: types,
       type: 'Item4', // 组件类型
       props: {}, // 组件的属性
       children: [
@@ -66,7 +86,7 @@ const getDefaultValue = () => {
           id: '1-1',
           canDrag: true, // 能否拖动
           canDrop: true, // 能否放置拖动组件
-          accept: ['Item1', 'Item2', 'Item3', 'Item4'],
+          accept: types,
           type: 'Item4', // 组件类型
           props: {}, // 组件的属性
           children: [
@@ -74,7 +94,7 @@ const getDefaultValue = () => {
               id: '1-1-1',
               canDrag: true, // 能否拖动
               canDrop: true, // 能否放置拖动组件
-              accept: ['Item1', 'Item2', 'Item3', 'Item4'],
+              accept: types,
               type: 'Item4', // 组件类型
               props: {}, // 组件的属性
               children: [
@@ -130,6 +150,34 @@ const getDefaultValue = () => {
   return defaultValue;
 };
 
+const addPosition = (
+  id: string,
+  monitor: any,
+  direction?: 'row' | 'column',
+) => {
+  const boundingClientRect = document
+    .getElementById(id)
+    ?.getBoundingClientRect();
+  if (boundingClientRect) {
+    const { left, right, bottom, top } = boundingClientRect;
+    if (direction === 'row') {
+      // 中间位置
+      const middle = (right - left) / 2;
+      // 鼠标指针离目标元素左侧距离;
+      const h = monitor.getClientOffset().x - left;
+      return h > middle ? 'push' : 'unshift';
+    }
+
+    // 中间位置
+    const middle = (bottom - top) / 2;
+    // 鼠标指针离目标元素顶部距离;
+    const h = monitor.getClientOffset().y - top;
+    return h > middle ? 'push' : 'unshift';
+  }
+
+  return null;
+};
+
 const Comp: React.FC = () => {
   const [components, setComponents] = useState<Global.Components>(
     getDefaultValue(),
@@ -150,9 +198,10 @@ const Comp: React.FC = () => {
     return idMapComponent as { [key: string]: Global.DropComponentProps };
   }, [components]);
 
-  const drop = (
+  const dropCallback = (
     dropData: Global.DropComponentProps,
     dragData: Global.DragComponentProps,
+    monitor: any,
   ) => {
     // 移动到自己区域，直接返回
     if (dragData.id === dropData.id) return;
@@ -165,6 +214,7 @@ const Comp: React.FC = () => {
         id: 'id-' + Math.random(),
         canDrag: dragData.canDrag,
         canDrop: dragData.canDrop,
+        direction: dragData.direction,
         children: dragData.canDrop ? [] : undefined,
       };
 
@@ -173,9 +223,16 @@ const Comp: React.FC = () => {
         const parent = idMapComponent[dropData.id];
         const children = parent.children;
         if (children) {
-          addOptions.parent = parent;
-          children.unshift(addOptions);
-          setComponents([...components]);
+          const position = addPosition(
+            dropData.id,
+            monitor,
+            dropData.direction,
+          );
+          if (position) {
+            addOptions.parent = parent;
+            children[position](addOptions);
+            setComponents([...components]);
+          }
         }
         return;
       }
@@ -197,8 +254,8 @@ const Comp: React.FC = () => {
       const children = parent?.children;
 
       if (parent && children) {
-        const deleteIndex = children.findIndex((v) => v.id === dragData.id);
         // 先在原来的位置上删除
+        const deleteIndex = children.findIndex((v) => v.id === dragData.id);
         const moveItem = children.splice(deleteIndex, 1)[0];
 
         // 拖动到布局组件中，默认放到布局组件的第一个子元素
@@ -206,8 +263,16 @@ const Comp: React.FC = () => {
           const newParent = idMapComponent[dropData.id];
           const children = newParent.children;
           if (newParent && children) {
-            moveItem.parent = newParent;
-            children?.unshift(moveItem);
+            const position = addPosition(
+              dropData.id,
+              monitor,
+              dropData.direction,
+            );
+            if (position) {
+              moveItem.parent = newParent;
+              children[position](moveItem);
+              setComponents([...components]);
+            }
           }
         } else {
           // 拖动到基本组件中，和基本组件同一级别, 位置为基本组件下一个元素
@@ -233,7 +298,11 @@ const Comp: React.FC = () => {
       if (canDrop) {
         return (
           <Drag data={options} key={id}>
-            <Drop drop={drop} data={options}>
+            <Drop
+              data={options}
+              drop={dropCallback}
+              direction={options.direction}
+            >
               {children && !!children.length && getConpmnents(children)}
             </Drop>
           </Drag>
@@ -242,7 +311,11 @@ const Comp: React.FC = () => {
 
       return (
         <Drag data={options} key={id}>
-          <Drop drop={drop} data={options}>
+          <Drop
+            data={options}
+            drop={dropCallback}
+            direction={options.direction}
+          >
             <Comp {...props}></Comp>
           </Drop>
         </Drag>

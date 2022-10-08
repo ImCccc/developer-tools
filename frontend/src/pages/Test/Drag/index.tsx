@@ -36,6 +36,7 @@ const Drag: React.FC<Global.DragProps> = ({
 
   return (
     <div
+      id={data.id}
       ref={drager}
       className={className}
       style={{ cursor: disabled ? 'no-drop' : 'move' }}
