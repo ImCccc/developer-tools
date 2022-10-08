@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import DropId from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
+import { allTypes } from '..';
 
 const Comp: React.FC<Global.DropProps> = ({
   data,
@@ -24,7 +25,7 @@ const Comp: React.FC<Global.DropProps> = ({
 
   const [, droper] = useDrop<Global.DragComponentProps>({
     // 能接受什么东西
-    accept: data.accept || ['Item1', 'Item2', 'Item3', 'Item4'],
+    accept: data.accept || allTypes,
 
     // 有东西来了, 会不断触发, props 就是拖动组件传递过来的数据
     hover: (props, monitor) => {

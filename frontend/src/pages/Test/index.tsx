@@ -6,7 +6,7 @@ import Drag from './Drag';
 import Drop from './Drop';
 import styles from './index.module.less';
 
-const types: Global.ComponentTypes[] = [
+export const allTypes: Global.ComponentTypes[] = [
   'Item1',
   'Item2',
   'Item3',
@@ -78,7 +78,7 @@ const getDefaultValue = () => {
       id: '1',
       canDrag: false, // 能否拖动
       canDrop: true, // 能否放置拖动组件
-      accept: types,
+      accept: allTypes,
       type: 'Item4', // 组件类型
       props: {}, // 组件的属性
       children: [
@@ -86,7 +86,7 @@ const getDefaultValue = () => {
           id: '1-1',
           canDrag: true, // 能否拖动
           canDrop: true, // 能否放置拖动组件
-          accept: types,
+          accept: allTypes,
           type: 'Item4', // 组件类型
           props: {}, // 组件的属性
           children: [
@@ -94,7 +94,7 @@ const getDefaultValue = () => {
               id: '1-1-1',
               canDrag: true, // 能否拖动
               canDrop: true, // 能否放置拖动组件
-              accept: types,
+              accept: allTypes,
               type: 'Item4', // 组件类型
               props: {}, // 组件的属性
               children: [
