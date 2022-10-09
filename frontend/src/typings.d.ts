@@ -40,6 +40,7 @@ declare namespace Global {
     className?: string;
     children: any;
     data: DragComponentProps;
+    onClick?: (data: DragComponentProps) => void;
   };
 
   type Components = DropComponentProps[];

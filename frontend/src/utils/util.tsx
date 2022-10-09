@@ -1,3 +1,5 @@
+import { Modal } from 'antd';
+
 export function updateObjectByString<T>(object: T, keys: string, value: any) {
   if (!object) return object;
   if (typeof object === 'string' || typeof object === 'number') return object;
@@ -37,3 +39,17 @@ export function updateObjectByString<T>(object: T, keys: string, value: any) {
 export function JSONclone<T>(object: T) {
   return JSON.parse(JSON.stringify(object)) as T;
 }
+
+export const dryConfirm = (content: string) => {
+  return new Promise((resolve, reject) => {
+    Modal.confirm({
+      content,
+      onOk() {
+        resolve(true);
+      },
+      onCancel() {
+        reject();
+      },
+    });
+  });
+};
