@@ -7,12 +7,16 @@ import DropId from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
 import { allTypes } from '@/components/DragList';
+import { VirtualId } from '..';
+
+export type MousePositionType = 'up' | 'down';
 
 const Comp: React.FC<Global.DropProps> = ({
   data,
   style,
   drop,
   children,
+  hover,
   className,
   direction = 'column',
 }) => {
@@ -23,6 +27,9 @@ const Comp: React.FC<Global.DropProps> = ({
   // 用于判断当前移动的元素，是否包含目标元素
   const isChildren = useRef<boolean>(false);
 
+  // 鼠标位置, 实在目标元素的上面, 还是下面
+  const mousePosition = useRef<MousePositionType | ''>('');
+
   const [, droper] = useDrop<Global.DragComponentProps>({
     // 能接受什么东西
     accept: data.accept || allTypes,
@@ -31,31 +38,53 @@ const Comp: React.FC<Global.DropProps> = ({
     hover: (props, monitor) => {
       if (!dropRef.current) return;
 
-      if (monitor.isOver({ shallow: true })) {
-        isChildren.current = false;
+      // 拖到自己区域,直接返回
+      if (data.id === props.id) return;
 
-        let parent = data.parent;
-        while (parent) {
-          if (parent.id === props.id) {
-            isChildren.current = true;
-            break;
-          }
-          parent = parent.parent;
-        }
+      // 拖动到虚拟节点,直接返回
+      if (id === VirtualId) return;
 
-        if (isChildren.current === false) {
-          DropId.id = data.id;
+      // 不是目标元素上的hover钩子, 直接返回
+      if (!monitor.isOver({ shallow: true })) return;
+
+      isChildren.current = false;
+
+      let parent = data.parent;
+      while (parent) {
+        if (parent.id === props.id) {
+          isChildren.current = true;
+          break;
         }
+        parent = parent.parent;
+      }
+
+      // 拖动到子节点上,直接返回
+      if (isChildren.current) return;
+
+      const { bottom, top } = dropRef.current.getBoundingClientRect();
+      const middle = (bottom - top) / 2;
+      const y = monitor.getClientOffset()?.y || 0;
+      if (!y) return;
+
+      const thisMousePosition = middle > y - top ? 'up' : 'down';
+
+      if (DropId.id !== id) {
+        DropId.id = id;
+        hover && hover(data, props, thisMousePosition);
+      } else {
+        if (thisMousePosition === mousePosition.current) return;
+        mousePosition.current = thisMousePosition;
+        hover && hover(data, props, thisMousePosition);
       }
     },
 
     // 东西放下了, 触发一次, props 就是拖动组件传递过来的数据
     drop: (props, monitor) => {
+      if (data.id === props.id) return;
       // 如果移动到自己的子元素中，那么不处理
       if (monitor.isOver({ shallow: true }) && isChildren.current === false) {
         drop && drop(data, props, monitor);
       }
-      DropId.id = '';
     },
 
     // 可以判断组件能否下, 会不断触发, props 就是拖动组件传递过来的数据
@@ -67,15 +96,15 @@ const Comp: React.FC<Global.DropProps> = ({
   const click = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       e.stopPropagation();
-      DropId.selectedId = data.id || '';
+      DropId.selectedId = id || '';
     },
-    [data],
+    [id],
   );
 
   const _style = {
     ...style,
     cursor: data.canDrag ? 'move' : '',
-    border: DropId.selectedId === data.id ? '1px solid #2196f3' : '',
+    border: DropId.selectedId === id ? '1px solid #2196f3' : '',
   };
 
   return (
@@ -86,8 +115,9 @@ const Comp: React.FC<Global.DropProps> = ({
       className={classNames(
         {
           [styles.empty]: !children,
-          [styles.active]: DropId.id === id,
           [styles.drop]: data.canDrop,
+          [styles.active]: DropId.id === id,
+          [styles.virtual]: id === VirtualId,
         },
         className,
         styles[direction],

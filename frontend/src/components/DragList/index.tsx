@@ -12,27 +12,37 @@ export const allTypes: ComponentTypes[] = [
 export const getConpmnentByType = (type: ComponentTypes) => {
   if (type === 'Item1') {
     return (
-      <div style={{ border: '1px solid red', height: '30px' }}>拖动组件1</div>
+      <div style={{ background: 'antiquewhite', height: '30px' }}>
+        拖动组件1
+      </div>
     );
   }
   if (type === 'Item2') {
     return (
-      <div style={{ border: '1px solid red', height: '50px' }}>拖动组件2</div>
+      <div style={{ background: 'antiquewhite', height: '50px' }}>
+        拖动组件2
+      </div>
     );
   }
   if (type === 'Item3') {
     return (
-      <div style={{ border: '1px solid red', height: '70px' }}>拖动组件3</div>
+      <div style={{ background: 'antiquewhite', height: '70px' }}>
+        拖动组件3
+      </div>
     );
   }
   if (type === 'Item4') {
     return (
-      <div style={{ border: '1px solid red', padding: '40px' }}>列布局组件</div>
+      <div style={{ background: 'antiquewhite', padding: '40px' }}>
+        列布局组件
+      </div>
     );
   }
   if (type === 'Item5') {
     return (
-      <div style={{ border: '1px solid red', padding: '40px' }}>行布局组件</div>
+      <div style={{ background: 'antiquewhite', padding: '40px' }}>
+        行布局组件
+      </div>
     );
   }
 

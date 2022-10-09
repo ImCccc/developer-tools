@@ -4,34 +4,34 @@ import {
   dragComponentList,
   getConpmnentByType,
 } from '@/components/DragList';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Drag from './Drag';
-import Drop from './Drop';
+import Drop, { MousePositionType } from './Drop';
 import DropId from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
 import { dryConfirm } from '@/utils/util';
 
 const Item1: React.FC = () => (
-  <div style={{ border: '1px solid red', height: '30px' }}>拖动组件1</div>
+  <div style={{ background: 'antiquewhite', height: '30px' }}>拖动组件1</div>
 );
 
 const Item2: React.FC = () => (
-  <div style={{ border: '1px solid red', height: '50px' }}>拖动组件2</div>
+  <div style={{ background: 'antiquewhite', height: '50px' }}>拖动组件2</div>
 );
 
 const Item3: React.FC = () => (
-  <div style={{ border: '1px solid red', height: '70px' }}>拖动组件3</div>
+  <div style={{ background: 'antiquewhite', height: '70px' }}>拖动组件3</div>
 );
 
 const Item4: React.FC = () => (
-  <div style={{ border: '1px solid red', padding: '40px' }}>列布局组件</div>
+  <div style={{ background: 'antiquewhite', padding: '40px' }}>列布局组件</div>
 );
 
 const Item5: React.FC = () => (
-  <div style={{ border: '1px solid red', padding: '40px' }}>行布局组件</div>
+  <div style={{ background: 'antiquewhite', padding: '40px' }}>行布局组件</div>
 );
 
 const componentsObject = {
@@ -42,10 +42,13 @@ const componentsObject = {
   Item5,
 };
 
+export const VirtualId = 'Virtual id';
+
 const getDefaultValue = () => {
   const defaultValue: Global.Components = [
     {
       id: '1',
+      originalId: '1',
       canDrag: false, // 能否拖动
       canDrop: true, // 能否放置拖动组件
       accept: allTypes,
@@ -53,7 +56,16 @@ const getDefaultValue = () => {
       props: {}, // 组件的属性
       children: [
         {
+          id: '1-3',
+          originalId: '1-3',
+          canDrag: true,
+          canDrop: false,
+          type: 'Item3',
+          props: {},
+        },
+        {
           id: '1-1',
+          originalId: '1-1',
           canDrag: true, // 能否拖动
           canDrop: true, // 能否放置拖动组件
           accept: allTypes,
@@ -62,6 +74,7 @@ const getDefaultValue = () => {
           children: [
             {
               id: '1-1-1',
+              originalId: '1-1-1',
               canDrag: true, // 能否拖动
               canDrop: true, // 能否放置拖动组件
               accept: allTypes,
@@ -70,6 +83,7 @@ const getDefaultValue = () => {
               children: [
                 {
                   id: '1-1-1-1',
+                  originalId: '1-1-1-1',
                   canDrag: true,
                   canDrop: false,
                   type: 'Item1',
@@ -77,6 +91,7 @@ const getDefaultValue = () => {
                 },
                 {
                   id: '1-1-1-2',
+                  originalId: '1-1-1-2',
                   canDrag: true,
                   canDrop: false,
                   type: 'Item3',
@@ -86,6 +101,7 @@ const getDefaultValue = () => {
             },
             {
               id: '1-1-2',
+              originalId: '1-1-2',
               canDrag: true,
               canDrop: false,
               type: 'Item3',
@@ -95,6 +111,7 @@ const getDefaultValue = () => {
         },
         {
           id: '1-2',
+          originalId: '1-2',
           canDrag: true,
           canDrop: false,
           type: 'Item3',
@@ -166,96 +183,110 @@ const Comp: React.FC = () => {
     return idMapComponent as { [key: string]: Global.DropComponentProps };
   }, [components]);
 
-  const dropCallback = (
+  const virtualComponent = useRef<Global.DropComponentProps>();
+
+  // 删除虚拟组件
+  const deleteVirtual = () => {
+    const virtual = idMapComponent[VirtualId];
+    if (!virtual) return;
+    const parent = virtual.parent;
+    const children = parent?.children;
+    if (!children) return;
+
+    let deleteItem;
+    parent.children = children.filter((v) => {
+      if (v.id === VirtualId) {
+        deleteItem = v;
+        return false;
+      }
+      return true;
+    });
+    return deleteItem;
+  };
+
+  const dropCallback = () => {
+    const virtual = idMapComponent[VirtualId];
+    if (!virtual) return;
+
+    const originalId = virtual.originalId;
+    // 处理移动组件的逻辑
+    if (originalId) {
+      const children = idMapComponent[originalId].parent?.children;
+      if (children) {
+        const deleteIndex = children.findIndex((v) => v.id === originalId);
+        if (deleteIndex > -1) children.splice(deleteIndex, 1);
+      }
+      virtual.id = originalId;
+      return setComponents([...components]);
+    }
+
+    // 新增组件的逻辑
+    virtual.id = `id-${Math.random()}`;
+    virtual.originalId = virtual.id;
+    setComponents([...components]);
+  };
+
+  const hoverCallback = (
     dropData: Global.DropComponentProps,
     dragData: Global.DragComponentProps,
-    monitor: any,
+    mousePosition: MousePositionType,
   ) => {
-    // 移动到自己区域，直接返回
-    if (dragData.id === dropData.id) return;
+    const addOptions: Global.DropComponentProps =
+      deleteVirtual() ||
+      (dragData.originalId
+        ? { ...dragData, id: VirtualId }
+        : {
+            props: {},
+            id: VirtualId,
+            type: dragData.type,
+            canDrag: dragData.canDrag,
+            canDrop: dragData.canDrop,
+            direction: dragData.direction,
+            children: dragData.canDrop ? [] : undefined,
+          });
 
-    // 向页面添加新的组件
-    if (!dragData.id) {
-      const addOptions: Global.DropComponentProps = {
-        props: {},
-        type: dragData.type,
-        id: 'id-' + Math.random(),
-        canDrag: dragData.canDrag,
-        canDrop: dragData.canDrop,
-        direction: dragData.direction,
-        children: dragData.canDrop ? [] : undefined,
-      };
+    if (dragData.originalId) {
+      const dom = document.getElementById(dragData.originalId);
+      if (dom) dom.style.display = 'none';
+    }
 
-      // 拖动到布局组件中，默认放到布局组件的第一个子元素
-      if (dropData.canDrop) {
-        const parent = idMapComponent[dropData.id];
-        const children = parent.children;
-        if (children) {
-          const position = addPosition(
-            dropData.id,
-            monitor,
-            dropData.direction,
-          );
-          if (position) {
-            addOptions.parent = parent;
-            children[position](addOptions);
-            setComponents([...components]);
-          }
-        }
-        return;
-      }
-
-      // 拖动到基本组件中，和基本组件同一级别, 位置为基本组件下一个元素
-      const parent = idMapComponent[dropData.id].parent;
-      const children = parent?.children;
+    // 布局组件
+    if (dropData.canDrop) {
+      const parent = idMapComponent[dropData.id];
+      const children = idMapComponent[dropData.id].children;
       if (parent && children) {
         addOptions.parent = parent;
-        const appendIndex = children.findIndex((v) => v.id === dropData.id);
-        children.splice(appendIndex + 1, 0, addOptions);
-        setComponents([...components]);
+        children[mousePosition === 'down' ? 'push' : 'unshift'](addOptions);
       }
+      return setComponents([...components]);
     }
 
-    // 移动组件
-    if (dragData.id) {
-      const parent = idMapComponent[dragData.id].parent;
-      const children = parent?.children;
-
-      if (parent && children) {
-        // 先在原来的位置上删除
-        const deleteIndex = children.findIndex((v) => v.id === dragData.id);
-        const moveItem = children.splice(deleteIndex, 1)[0];
-
-        // 拖动到布局组件中，默认放到布局组件的第一个子元素
-        if (dropData.canDrop) {
-          const newParent = idMapComponent[dropData.id];
-          const children = newParent.children;
-          if (newParent && children) {
-            const position = addPosition(
-              dropData.id,
-              monitor,
-              dropData.direction,
-            );
-            if (position) {
-              moveItem.parent = newParent;
-              children[position](moveItem);
-              setComponents([...components]);
-            }
-          }
-        } else {
-          // 拖动到基本组件中，和基本组件同一级别, 位置为基本组件下一个元素
-          const newParent = idMapComponent[dropData.id].parent;
-          const children = newParent?.children;
-          if (newParent && children) {
-            moveItem.parent = newParent;
-            const appendIndex = children.findIndex((v) => v.id === dropData.id);
-            children.splice(appendIndex + 1, 0, moveItem);
-          }
-        }
-
-        setComponents([...components]);
-      }
+    // 基本组件
+    const parent = idMapComponent[dropData.id].parent;
+    const children = parent?.children;
+    if (parent && children) {
+      addOptions.parent = parent;
+      let appendIndex = children.findIndex((v) => v.id === dropData.id);
+      appendIndex += mousePosition === 'down' ? 1 : 0;
+      children.splice(appendIndex, 0, addOptions);
     }
+    setComponents([...components]);
+  };
+
+  const dragBegin = (data: Global.DropComponentProps) => {
+    console.log('dragBegin:', data);
+  };
+
+  const dragEnd = (dragData: Global.DropComponentProps) => {
+    // 恢复dom
+    if (dragData.originalId) {
+      const dom = document.getElementById(dragData.originalId);
+      if (dom) dom.style.display = '';
+    }
+
+    deleteVirtual();
+    DropId.id = '';
+    setComponents([...components]);
   };
 
   const getConpmnents = (components: any) => {
@@ -269,6 +300,7 @@ const Comp: React.FC = () => {
             <Drop
               data={options}
               drop={dropCallback}
+              hover={hoverCallback}
               direction={options.direction}
             >
               {children && children[0] && getConpmnents(children)}
@@ -278,10 +310,11 @@ const Comp: React.FC = () => {
       }
 
       return (
-        <Drag data={options} key={id}>
+        <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
           <Drop
             data={options}
             drop={dropCallback}
+            hover={hoverCallback}
             direction={options.direction}
           >
             <Comp {...props}></Comp>
@@ -322,7 +355,7 @@ const Comp: React.FC = () => {
         <div className={styles.side}>
           {dragComponentList.map((comp) => {
             return (
-              <Drag key={comp.type} data={comp}>
+              <Drag end={dragEnd} key={comp.type} data={comp}>
                 {getConpmnentByType(comp.type)}
               </Drag>
             );
