@@ -1,6 +1,7 @@
 // 拖动的组件
-import React, { useMemo } from 'react';
 import { useDrag } from 'react-dnd';
+import React, { useMemo } from 'react';
+import { VirtualId } from '@/components/DragList';
 
 const Drag: React.FC<Global.DragProps> = ({
   disabled,
@@ -33,7 +34,12 @@ const Drag: React.FC<Global.DragProps> = ({
   });
 
   return (
-    <div style={style} id={data.id} ref={drager} className={className}>
+    <div
+      ref={drager}
+      style={style}
+      className={className}
+      id={data.id === VirtualId ? undefined : data.id}
+    >
       {children}
     </div>
   );

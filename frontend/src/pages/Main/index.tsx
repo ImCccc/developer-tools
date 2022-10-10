@@ -129,6 +129,7 @@ const Comp: React.FC = () => {
     if (!virtual) return;
 
     const originalId = virtual.originalId;
+
     // 处理移动组件的逻辑
     if (originalId) {
       const children = idMapComponent[originalId].parent?.children;
@@ -136,12 +137,11 @@ const Comp: React.FC = () => {
         const deleteIndex = children.findIndex((v) => v.id === originalId);
         if (deleteIndex > -1) children.splice(deleteIndex, 1);
       }
-      virtual.id = originalId;
-      return setComponents([...components]);
     }
 
     // 新增组件的逻辑
-    virtual.id = `id-${Math.random()}`;
+    virtual.id = originalId || `id-${Math.random()}`;
+    deleteVirtual();
     setComponents([...components]);
   };
 
