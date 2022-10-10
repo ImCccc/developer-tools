@@ -14,11 +14,7 @@ import Drop from './Drop';
 import useMobx from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
-import { dryConfirm } from '@/utils/util';
-
-function clone<T>(data: T) {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
+import { dryConfirm, JSONclone } from '@/utils/util';
 
 const getDefaultValue = () => {
   const defaultValue: Global.Components = [
@@ -46,27 +42,13 @@ const getDefaultValue = () => {
           props: {}, // 组件的属性
           children: [
             {
-              id: '1-1-1-1',
-              canDrag: true,
-              canDrop: false,
-              type: 'Input',
-              props: {},
-            },
-            {
               id: '1-1-1-2',
               canDrag: true,
               canDrop: false,
-              type: 'Input',
+              type: 'Button',
               props: {},
             },
           ],
-        },
-        {
-          id: '1-1-2',
-          canDrag: true,
-          canDrop: false,
-          type: 'Input',
-          props: {},
         },
         {
           id: '1-2',
@@ -85,9 +67,7 @@ const getDefaultValue = () => {
     components.forEach((options) => {
       const { children } = options;
       options.parent = parant;
-      if (children && children.length) {
-        initData(children, options);
-      }
+      if (children) initData(children, options);
     });
   };
   initData(defaultValue);
@@ -101,6 +81,7 @@ const Comp: React.FC = () => {
     getDefaultValue(),
   );
 
+  // id 映射组件
   const idMapComponent = useMemo(() => {
     const idMapComponent = {};
     const initComponentsData = (components: Global.Components) => {
@@ -114,16 +95,33 @@ const Comp: React.FC = () => {
     return idMapComponent as { [key: string]: Global.DropComponentProps };
   }, [components]);
 
-  // 删除虚拟组件
-  const deleteVirtual = () => {
+  // 删除虚拟组件, 有时候速度快的时候, 会产生2个虚拟组件, 需要递归删除
+  const deleteVirtualLoop = () => {
+    const cloneComponents = [...components];
+    const loop = (components: Global.Components) => {
+      components.forEach((options) => {
+        if (options.children) {
+          options.children = options.children.filter((v) => v.id !== VirtualId);
+          loop(options.children);
+        }
+      });
+    };
+    loop(cloneComponents);
+    setComponents(cloneComponents);
+  };
+
+  // 删除虚拟组件, 这个方法时间复杂低, 但是可能会出现 bug, 原因可能是移动的时候, 异步导致的
+  const deleteVirtualById = () => {
     const virtual = idMapComponent[VirtualId];
     if (!virtual) return;
     const children = virtual.parent?.children || [];
     const deleteIndex = children.findIndex((v) => v.id === VirtualId);
     if (deleteIndex === -1) return;
-    return children.splice(deleteIndex, 1)[0];
+    const deleteItem = children.splice(deleteIndex, 1)[0];
+    return deleteItem;
   };
 
+  // 组件接受到拖拽组件时的回调
   const dropCallback = () => {
     const virtual = idMapComponent[VirtualId];
     if (!virtual) return;
@@ -141,10 +139,10 @@ const Comp: React.FC = () => {
 
     // 新增组件的逻辑
     virtual.id = originalId || `id-${Math.random()}`;
-    deleteVirtual();
     setComponents([...components]);
   };
 
+  // 移动组件移动到某个组件时的回调, 已经处理过,不会连续触发
   const hoverCallback = (
     dropData: Global.DropComponentProps,
     dragData: Global.DragComponentProps,
@@ -154,14 +152,14 @@ const Comp: React.FC = () => {
 
     if (dragData.id !== VirtualId) {
       // 移动组件
-      addOptions = deleteVirtual() || {
+      addOptions = deleteVirtualById() || {
         ...dragData,
         id: VirtualId,
         originalId: dragData.id,
       };
     } else {
       // 新增组件
-      addOptions = deleteVirtual() || clone(dragData);
+      addOptions = deleteVirtualById() || JSONclone(dragData);
     }
 
     // 布局组件
@@ -199,6 +197,7 @@ const Comp: React.FC = () => {
     }, 60);
   };
 
+  // 移动组件时, 鼠标放下的回调, 可能没有移动到目标组件中
   const dragEnd = (dragData: Global.DropComponentProps) => {
     // 鼠标放下,如果组件没有放在正确的区域, 那么移动失败, 需要恢复dom
     let dom = document.getElementById(dragData.id);
@@ -206,29 +205,28 @@ const Comp: React.FC = () => {
     dom = document.getElementById(dragData.id);
     if (dom) dom.style.display = '';
 
-    deleteVirtual();
     DropData.id = '';
-    setComponents([...components]);
+    deleteVirtualLoop();
   };
 
-  const getConpmnents = (components: any) => {
-    return components.map((options: any) => {
-      const { children, type, canDrop, props, id } = options;
+  const getConpmnents = (components: Global.Components, isFirst?: boolean) => {
+    return components.map((options) => {
+      const { children, type, props, id } = options;
       const Comp = componentsObject[type];
-      if (canDrop) {
-        return (
-          <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
-            <Drop
-              data={options}
-              drop={dropCallback}
-              hover={hoverCallback}
-              direction={options.direction}
-            >
-              {children && children[0] && getConpmnents(children)}
-            </Drop>
-          </Drag>
-        );
-      }
+      // if (isFirst) {
+      //   return (
+      //     <Drop
+      //       key={id}
+      //       data={options}
+      //       drop={dropCallback}
+      //       hover={hoverCallback}
+      //       style={{ padding: '30px' }}
+      //       direction={options.direction}
+      //     >
+      //       {children && children[0] && getConpmnents(children)}
+      //     </Drop>
+      //   );
+      // }
       return (
         <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
           <Drop
@@ -237,7 +235,11 @@ const Comp: React.FC = () => {
             hover={hoverCallback}
             direction={options.direction}
           >
-            <Comp {...props}></Comp>
+            {children ? (
+              children[0] && getConpmnents(children)
+            ) : (
+              <Comp {...props}></Comp>
+            )}
           </Drop>
         </Drag>
       );
@@ -297,7 +299,7 @@ const Comp: React.FC = () => {
             );
           })}
         </div>
-        <div className={styles.content}>{getConpmnents(components)}</div>
+        <div className={styles.content}>{getConpmnents(components, true)}</div>
       </div>
     </DndProvider>
   );

@@ -1,3 +1,4 @@
+import { allTypes } from '@/components/DragList';
 import { Modal } from 'antd';
 
 export function updateObjectByString<T>(object: T, keys: string, value: any) {
@@ -40,16 +41,47 @@ export function JSONclone<T>(object: T) {
   return JSON.parse(JSON.stringify(object)) as T;
 }
 
+export const getPageConfig = (routeName: string) => {
+  let defaultValue: Global.Components = [
+    {
+      id: '1',
+      props: {},
+      children: [],
+      canDrop: true,
+      canDrag: false,
+      accept: allTypes,
+      type: 'LayoutRow',
+    },
+  ];
+
+  const configStr = localStorage.getItem('PAGE-CACHE-' + routeName);
+  if (!configStr) return defaultValue;
+
+  try {
+    defaultValue = JSON.parse(configStr);
+    if (!defaultValue.length) return defaultValue;
+    const initData = (
+      components: Global.Components,
+      parant?: Global.DropComponentProps,
+    ) => {
+      components.forEach((options) => {
+        const { children } = options;
+        options.parent = parant;
+        if (children) initData(children, options);
+      });
+    };
+    initData(defaultValue);
+  } catch (error) {}
+
+  return defaultValue;
+};
+
 export const dryConfirm = (content: string) => {
   return new Promise((resolve, reject) => {
     Modal.confirm({
       content,
-      onOk() {
-        resolve(true);
-      },
-      onCancel() {
-        reject();
-      },
+      onOk: () => resolve(true),
+      onCancel: () => reject(),
     });
   });
 };
