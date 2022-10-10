@@ -118,8 +118,7 @@ const Comp: React.FC<Global.DropProps> = ({
         styles[direction],
       )}
     >
-      {children}
-      {!children && '请将组件拖到这里'}
+      {children || '请将组件拖到这里'}
     </div>
   );
 };

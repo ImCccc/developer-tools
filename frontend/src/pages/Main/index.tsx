@@ -174,7 +174,7 @@ const Comp: React.FC = () => {
   const hoverCallback = (
     dropData: Global.DropComponentProps,
     dragData: Global.DragComponentProps,
-    mousePosition: MousePositionType,
+    mousePosition: string,
   ) => {
     let addOptions;
 
