@@ -78,7 +78,6 @@ const getDefaultValue = () => {
       ],
     },
   ];
-
   const initData = (
     components: Global.Components,
     parant?: Global.DropComponentProps,
