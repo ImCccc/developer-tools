@@ -9,7 +9,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Drag from './Drag';
-import Drop, { MousePositionType } from './Drop';
+import Drop from './Drop';
 import DropId from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
