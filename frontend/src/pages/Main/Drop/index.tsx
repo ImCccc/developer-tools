@@ -101,10 +101,10 @@ const Comp: React.FC<Global.DropProps> = ({
         border: DropData.selectedId === id ? '1px solid #2196f3' : '',
       }}
       className={classNames({
+        // [styles.active]: DropData.id === id,
         [styles[direction]]: true,
         [styles.empty]: !children,
         [styles.drop]: data.canDrop,
-        [styles.active]: DropData.id === id,
         [styles.virtual]: id === VirtualId,
       })}
     >
