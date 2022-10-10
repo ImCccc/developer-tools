@@ -3,8 +3,9 @@ import {
   allTypes,
   dragComponentList,
   getConpmnentByType,
+  VirtualId,
 } from '@/components/DragList';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Drag from './Drag';
@@ -12,26 +13,30 @@ import Drop, { MousePositionType } from './Drop';
 import DropId from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
-import { dryConfirm } from '@/utils/util';
+// import { dryConfirm } from '@/utils/util';
 
-const Item1: React.FC = () => (
-  <div style={{ background: 'antiquewhite', height: '30px' }}>拖动组件1</div>
+function clone<T>(data: T) {
+  return JSON.parse(JSON.stringify(data)) as T;
+}
+
+const Item1: React.FC<{ children: any }> = ({ children }) => (
+  <div style={{ background: 'antiquewhite', height: '40px' }}>{children}</div>
 );
 
-const Item2: React.FC = () => (
-  <div style={{ background: 'antiquewhite', height: '50px' }}>拖动组件2</div>
+const Item2: React.FC<{ children: any }> = ({ children }) => (
+  <div style={{ background: 'antiquewhite', height: '40px' }}>{children}</div>
 );
 
-const Item3: React.FC = () => (
-  <div style={{ background: 'antiquewhite', height: '70px' }}>拖动组件3</div>
+const Item3: React.FC<{ children: any }> = ({ children }) => (
+  <div style={{ background: 'antiquewhite', height: '40px' }}>{children}</div>
 );
 
-const Item4: React.FC = () => (
-  <div style={{ background: 'antiquewhite', padding: '40px' }}>列布局组件</div>
+const Item4: React.FC<{ children: any }> = ({ children }) => (
+  <div style={{ background: 'antiquewhite', padding: '40px' }}>{children}</div>
 );
 
-const Item5: React.FC = () => (
-  <div style={{ background: 'antiquewhite', padding: '40px' }}>行布局组件</div>
+const Item5: React.FC<{ children: any }> = ({ children }) => (
+  <div style={{ background: 'antiquewhite', padding: '40px' }}>{children}</div>
 );
 
 const componentsObject = {
@@ -42,13 +47,10 @@ const componentsObject = {
   Item5,
 };
 
-export const VirtualId = 'Virtual id';
-
 const getDefaultValue = () => {
   const defaultValue: Global.Components = [
     {
       id: '1',
-      originalId: '1',
       canDrag: false, // 能否拖动
       canDrop: true, // 能否放置拖动组件
       accept: allTypes,
@@ -57,15 +59,13 @@ const getDefaultValue = () => {
       children: [
         {
           id: '1-3',
-          originalId: '1-3',
           canDrag: true,
           canDrop: false,
           type: 'Item3',
           props: {},
         },
         {
-          id: '1-1',
-          originalId: '1-1',
+          id: '1-1-1',
           canDrag: true, // 能否拖动
           canDrop: true, // 能否放置拖动组件
           accept: allTypes,
@@ -73,35 +73,14 @@ const getDefaultValue = () => {
           props: {}, // 组件的属性
           children: [
             {
-              id: '1-1-1',
-              originalId: '1-1-1',
-              canDrag: true, // 能否拖动
-              canDrop: true, // 能否放置拖动组件
-              accept: allTypes,
-              type: 'Item4', // 组件类型
-              props: {}, // 组件的属性
-              children: [
-                {
-                  id: '1-1-1-1',
-                  originalId: '1-1-1-1',
-                  canDrag: true,
-                  canDrop: false,
-                  type: 'Item1',
-                  props: {},
-                },
-                {
-                  id: '1-1-1-2',
-                  originalId: '1-1-1-2',
-                  canDrag: true,
-                  canDrop: false,
-                  type: 'Item3',
-                  props: {},
-                },
-              ],
+              id: '1-1-1-1',
+              canDrag: true,
+              canDrop: false,
+              type: 'Item1',
+              props: {},
             },
             {
-              id: '1-1-2',
-              originalId: '1-1-2',
+              id: '1-1-1-2',
               canDrag: true,
               canDrop: false,
               type: 'Item3',
@@ -110,8 +89,14 @@ const getDefaultValue = () => {
           ],
         },
         {
+          id: '1-1-2',
+          canDrag: true,
+          canDrop: false,
+          type: 'Item3',
+          props: {},
+        },
+        {
           id: '1-2',
-          originalId: '1-2',
           canDrag: true,
           canDrop: false,
           type: 'Item3',
@@ -137,34 +122,6 @@ const getDefaultValue = () => {
   return defaultValue;
 };
 
-const addPosition = (
-  id: string,
-  monitor: any,
-  direction?: 'row' | 'column',
-) => {
-  const boundingClientRect = document
-    .getElementById(id)
-    ?.getBoundingClientRect();
-  if (boundingClientRect) {
-    const { left, right, bottom, top } = boundingClientRect;
-    if (direction === 'row') {
-      // 中间位置
-      const middle = (right - left) / 2;
-      // 鼠标指针离目标元素左侧距离;
-      const h = monitor.getClientOffset().x - left;
-      return h > middle ? 'push' : 'unshift';
-    }
-
-    // 中间位置
-    const middle = (bottom - top) / 2;
-    // 鼠标指针离目标元素顶部距离;
-    const h = monitor.getClientOffset().y - top;
-    return h > middle ? 'push' : 'unshift';
-  }
-
-  return null;
-};
-
 const Comp: React.FC = () => {
   const [components, setComponents] = useState<Global.Components>(
     getDefaultValue(),
@@ -183,25 +140,14 @@ const Comp: React.FC = () => {
     return idMapComponent as { [key: string]: Global.DropComponentProps };
   }, [components]);
 
-  const virtualComponent = useRef<Global.DropComponentProps>();
-
   // 删除虚拟组件
   const deleteVirtual = () => {
     const virtual = idMapComponent[VirtualId];
     if (!virtual) return;
-    const parent = virtual.parent;
-    const children = parent?.children;
-    if (!children) return;
-
-    let deleteItem;
-    parent.children = children.filter((v) => {
-      if (v.id === VirtualId) {
-        deleteItem = v;
-        return false;
-      }
-      return true;
-    });
-    return deleteItem;
+    const children = virtual.parent?.children || [];
+    const deleteIndex = children.findIndex((v) => v.id === VirtualId);
+    if (deleteIndex === -1) return;
+    return children.splice(deleteIndex, 1)[0];
   };
 
   const dropCallback = () => {
@@ -222,7 +168,6 @@ const Comp: React.FC = () => {
 
     // 新增组件的逻辑
     virtual.id = `id-${Math.random()}`;
-    virtual.originalId = virtual.id;
     setComponents([...components]);
   };
 
@@ -231,23 +176,18 @@ const Comp: React.FC = () => {
     dragData: Global.DragComponentProps,
     mousePosition: MousePositionType,
   ) => {
-    const addOptions: Global.DropComponentProps =
-      deleteVirtual() ||
-      (dragData.originalId
-        ? { ...dragData, id: VirtualId }
-        : {
-            props: {},
-            id: VirtualId,
-            type: dragData.type,
-            canDrag: dragData.canDrag,
-            canDrop: dragData.canDrop,
-            direction: dragData.direction,
-            children: dragData.canDrop ? [] : undefined,
-          });
+    let addOptions;
 
-    if (dragData.originalId) {
-      const dom = document.getElementById(dragData.originalId);
-      if (dom) dom.style.display = 'none';
+    if (dragData.id !== VirtualId) {
+      // 移动组件
+      addOptions = deleteVirtual() || {
+        ...dragData,
+        id: VirtualId,
+        originalId: dragData.id,
+      };
+    } else {
+      // 新增组件
+      addOptions = deleteVirtual() || clone(dragData);
     }
 
     // 布局组件
@@ -256,7 +196,11 @@ const Comp: React.FC = () => {
       const children = idMapComponent[dropData.id].children;
       if (parent && children) {
         addOptions.parent = parent;
-        children[mousePosition === 'down' ? 'push' : 'unshift'](addOptions);
+        if (mousePosition === 'down' || mousePosition === 'right') {
+          children.push(addOptions);
+        } else {
+          children.unshift(addOptions);
+        }
       }
       return setComponents([...components]);
     }
@@ -273,16 +217,20 @@ const Comp: React.FC = () => {
     setComponents([...components]);
   };
 
-  const dragBegin = (data: Global.DropComponentProps) => {
-    console.log('dragBegin:', data);
+  // 移动组件, 开始时需要隐藏组件
+  const dragBegin = (dragData: Global.DropComponentProps) => {
+    setTimeout(() => {
+      const dom = document.getElementById(dragData.id);
+      if (dom) dom.style.display = 'none';
+    }, 60);
   };
 
   const dragEnd = (dragData: Global.DropComponentProps) => {
-    // 恢复dom
-    if (dragData.originalId) {
-      const dom = document.getElementById(dragData.originalId);
-      if (dom) dom.style.display = '';
-    }
+    // 鼠标放下,如果组件没有放在正确的区域, 那么移动失败, 需要恢复dom
+    let dom = document.getElementById(dragData.id);
+    if (dom) dom.style.display = '';
+    dom = document.getElementById(dragData.id);
+    if (dom) dom.style.display = '';
 
     deleteVirtual();
     DropId.id = '';
@@ -293,10 +241,9 @@ const Comp: React.FC = () => {
     return components.map((options: any) => {
       const { children, type, canDrop, props, id } = options;
       const Comp = componentsObject[type];
-
       if (canDrop) {
         return (
-          <Drag data={options} key={id}>
+          <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
             <Drop
               data={options}
               drop={dropCallback}
@@ -308,7 +255,6 @@ const Comp: React.FC = () => {
           </Drag>
         );
       }
-
       return (
         <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
           <Drop
@@ -317,7 +263,7 @@ const Comp: React.FC = () => {
             hover={hoverCallback}
             direction={options.direction}
           >
-            <Comp {...props}></Comp>
+            <Comp {...props}>{id}</Comp>
           </Drop>
         </Drag>
       );
@@ -330,13 +276,21 @@ const Comp: React.FC = () => {
       const selectedId = DropId.selectedId;
       if (e.code.toLocaleLowerCase() !== 'delete' || !selectedId) return;
 
-      await dryConfirm('确定删除组件及其子元素?');
+      // await dryConfirm('确定删除组件及其子元素?');
       const deleteItem = idMapComponent[selectedId];
       const parent = deleteItem.parent;
 
       if (parent) {
         const children = parent.children;
         parent.children = children?.filter((v) => v.id !== selectedId);
+
+        // 移动时, 导致父子关系乱了 todo........
+        if (parent.canDrop) {
+          const gChildren = parent.parent?.children || [];
+          const index = gChildren.findIndex((v) => v.id === parent.id);
+          if (index !== -1) gChildren[index] = parent;
+        }
+
         return setComponents([...components]);
       }
 

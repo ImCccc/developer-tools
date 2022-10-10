@@ -6,17 +6,14 @@ import classNames from 'classnames';
 import DropId from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
-import { allTypes } from '@/components/DragList';
-import { VirtualId } from '..';
-
-export type MousePositionType = 'up' | 'down';
+import { allTypes, VirtualId } from '@/components/DragList';
 
 const Comp: React.FC<Global.DropProps> = ({
   data,
-  style,
   drop,
-  children,
   hover,
+  style,
+  children,
   className,
   direction = 'column',
 }) => {
@@ -24,67 +21,65 @@ const Comp: React.FC<Global.DropProps> = ({
 
   const dropRef = useRef<HTMLDivElement>(null);
 
-  // 用于判断当前移动的元素，是否包含目标元素
-  const isChildren = useRef<boolean>(false);
-
   // 鼠标位置, 实在目标元素的上面, 还是下面
-  const mousePosition = useRef<MousePositionType | ''>('');
+  const mousePosition = useRef<string>('');
+
+  const checkValid = (dragData: Global.DropComponentProps, monitor: any) => {
+    // 不是目标元素上的hover钩子, 直接返回
+    if (!monitor.isOver({ shallow: true })) return;
+
+    // 拖到自己区域,直接返回
+    if (id === dragData.id) return;
+
+    // 拖动到虚拟节点,直接返回
+    if (id === VirtualId) return;
+
+    let parent = data.parent;
+    while (parent) {
+      if (parent.id === dragData.id) return;
+      parent = parent.parent;
+    }
+
+    return true;
+  };
 
   const [, droper] = useDrop<Global.DragComponentProps>({
     // 能接受什么东西
     accept: data.accept || allTypes,
 
     // 有东西来了, 会不断触发, props 就是拖动组件传递过来的数据
-    hover: (props, monitor) => {
+    hover: (dragData, monitor) => {
       if (!dropRef.current) return;
+      if (!checkValid(dragData, monitor)) return;
 
-      // 拖到自己区域,直接返回
-      if (data.id === props.id) return;
-
-      // 拖动到虚拟节点,直接返回
-      if (id === VirtualId) return;
-
-      // 不是目标元素上的hover钩子, 直接返回
-      if (!monitor.isOver({ shallow: true })) return;
-
-      isChildren.current = false;
-
-      let parent = data.parent;
-      while (parent) {
-        if (parent.id === props.id) {
-          isChildren.current = true;
-          break;
-        }
-        parent = parent.parent;
-      }
-
-      // 拖动到子节点上,直接返回
-      if (isChildren.current) return;
-
-      const { bottom, top } = dropRef.current.getBoundingClientRect();
-      const middle = (bottom - top) / 2;
-      const y = monitor.getClientOffset()?.y || 0;
+      const { bottom, top, left, right } =
+        dropRef.current.getBoundingClientRect();
+      let middle = (bottom - top) / 2;
+      let y = monitor.getClientOffset()?.y || 0;
       if (!y) return;
+      let thisMousePosition = middle > y - top ? 'up' : 'down';
 
-      const thisMousePosition = middle > y - top ? 'up' : 'down';
+      if (data.direction === 'row') {
+        middle = (right - left) / 2;
+        y = monitor.getClientOffset()?.x || 0;
+        thisMousePosition = middle > y - left ? 'left' : 'right';
+      }
 
       if (DropId.id !== id) {
         DropId.id = id;
-        hover && hover(data, props, thisMousePosition);
+        hover && hover(data, dragData, thisMousePosition);
       } else {
         if (thisMousePosition === mousePosition.current) return;
         mousePosition.current = thisMousePosition;
-        hover && hover(data, props, thisMousePosition);
+        hover && hover(data, dragData, thisMousePosition);
       }
     },
 
     // 东西放下了, 触发一次, props 就是拖动组件传递过来的数据
-    drop: (props, monitor) => {
-      if (data.id === props.id) return;
-      // 如果移动到自己的子元素中，那么不处理
-      if (monitor.isOver({ shallow: true }) && isChildren.current === false) {
-        drop && drop(data, props, monitor);
-      }
+    drop: (dragData, monitor) => {
+      if (!dropRef.current) return;
+      if (!monitor.isOver({ shallow: true })) return;
+      drop && drop(data, dragData, monitor);
     },
 
     // 可以判断组件能否下, 会不断触发, props 就是拖动组件传递过来的数据
@@ -124,7 +119,7 @@ const Comp: React.FC<Global.DropProps> = ({
       )}
     >
       {children}
-      {!children && <span className={styles.add}>请将组件拖到这里</span>}
+      {!children && '请将组件拖到这里'}
     </div>
   );
 };

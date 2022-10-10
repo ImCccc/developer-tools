@@ -15,7 +15,8 @@ declare namespace Global {
     props?: ObjectProps; // 组件的属性
     accept?: ComponentTypes[]; // 如果能否放置组件, 那么接受什么组件
     children?: DropComponentProps[];
-    originalId?: string; // 移动组件时，会将组件的id设置为虚拟id, 需要保持原来的 id
+    originalId?: string; // 移动组件的原始ID
+    [k: string]: any;
   };
 
   type DropProps = {
@@ -28,7 +29,7 @@ declare namespace Global {
     hover?: (
       dropData: DropComponentProps,
       dragData: any,
-      mousePosition: 'up' | 'down',
+      mousePosition: string,
     ) => void;
   };
 

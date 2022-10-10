@@ -1,4 +1,5 @@
-// import styles from './index.module.less';
+export const VirtualId = 'Virtual id';
+
 export type ComponentTypes = 'Item1' | 'Item2' | 'Item3' | 'Item4' | 'Item5';
 
 export const allTypes: ComponentTypes[] = [
@@ -52,29 +53,41 @@ export const getConpmnentByType = (type: ComponentTypes) => {
 export const dragComponentList: Global.DragComponentProps[] = [
   {
     type: 'Item1', // 组件类型
+    props: {},
+    id: VirtualId,
     canDrag: true,
     canDrop: false,
   },
   {
     type: 'Item2', // 组件类型
+    props: {},
+    id: VirtualId,
     canDrag: true,
     canDrop: false,
   },
   {
     type: 'Item3', // 组件类型
+    props: {},
+    id: VirtualId,
     canDrag: true,
     canDrop: false,
   },
   {
     type: 'Item4',
+    props: {},
+    id: VirtualId,
     canDrag: true,
     canDrop: true,
     direction: 'column',
+    children: [],
   },
   {
     type: 'Item5',
+    props: {},
+    id: VirtualId,
     canDrag: true,
     canDrop: true,
     direction: 'row',
+    children: [],
   },
 ];
