@@ -14,34 +14,14 @@ const Comp: React.FC<Global.DropProps> = ({
   hover,
   style,
   children,
-  className,
   direction = 'column',
 }) => {
-  const id = useMemo(() => data.id, [data]);
-
   const dropRef = useRef<HTMLDivElement>(null);
+
+  const id = useMemo(() => data.id, [data]);
 
   // 鼠标位置, 实在目标元素的上面, 还是下面
   const mousePosition = useRef<string>('');
-
-  const checkValid = (dragData: Global.DropComponentProps, monitor: any) => {
-    // 不是目标元素上的hover钩子, 直接返回
-    if (!monitor.isOver({ shallow: true })) return;
-
-    // 拖到自己区域,直接返回
-    if (id === dragData.id) return;
-
-    // 拖动到虚拟节点,直接返回
-    if (id === VirtualId) return;
-
-    let parent = data.parent;
-    while (parent) {
-      if (parent.id === dragData.id) return;
-      parent = parent.parent;
-    }
-
-    return true;
-  };
 
   const [, droper] = useDrop<Global.DragComponentProps>({
     // 能接受什么东西
@@ -50,7 +30,21 @@ const Comp: React.FC<Global.DropProps> = ({
     // 有东西来了, 会不断触发, props 就是拖动组件传递过来的数据
     hover: (dragData, monitor) => {
       if (!dropRef.current) return;
-      if (!checkValid(dragData, monitor)) return;
+
+      // 不是目标元素上的hover钩子, 直接返回
+      if (!monitor.isOver({ shallow: true })) return;
+
+      // 拖到自己区域,直接返回
+      if (id === dragData.id) return;
+
+      // 拖动到虚拟节点,直接返回
+      if (id === VirtualId) return;
+
+      let parent = data.parent;
+      while (parent) {
+        if (parent.id === dragData.id) return;
+        parent = parent.parent;
+      }
 
       const { bottom, top, left, right } =
         dropRef.current.getBoundingClientRect();
@@ -96,27 +90,22 @@ const Comp: React.FC<Global.DropProps> = ({
     [id],
   );
 
-  const _style = {
-    ...style,
-    cursor: data.canDrag ? 'move' : '',
-    border: DropId.selectedId === id ? '1px solid #2196f3' : '',
-  };
-
   return (
     <div
-      style={_style}
       ref={dropRef}
       onClick={click}
-      className={classNames(
-        {
-          [styles.empty]: !children,
-          [styles.drop]: data.canDrop,
-          [styles.active]: DropId.id === id,
-          [styles.virtual]: id === VirtualId,
-        },
-        className,
-        styles[direction],
-      )}
+      style={{
+        ...style,
+        cursor: data.canDrag ? 'move' : '',
+        border: DropId.selectedId === id ? '1px solid #2196f3' : '',
+      }}
+      className={classNames({
+        [styles[direction]]: true,
+        [styles.empty]: !children,
+        [styles.drop]: data.canDrop,
+        [styles.active]: DropId.id === id,
+        [styles.virtual]: id === VirtualId,
+      })}
     >
       {children || '请将组件拖到这里'}
     </div>
