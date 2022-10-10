@@ -1,6 +1,5 @@
 // 拖动的组件
 import {
-  allTypes,
   VirtualId,
   dragComponentList,
   getConpmnentByType,
@@ -14,71 +13,71 @@ import Drop from './Drop';
 import useMobx from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
-import { dryConfirm, JSONclone } from '@/utils/util';
+import { dryConfirm, getPageConfig, JSONclone } from '@/utils/util';
 
-const getDefaultValue = () => {
-  const defaultValue: Global.Components = [
-    {
-      id: '1',
-      canDrag: false, // 能否拖动
-      canDrop: true, // 能否放置拖动组件
-      accept: allTypes,
-      type: 'LayoutRow', // 组件类型
-      props: {}, // 组件的属性
-      children: [
-        {
-          id: '1-3',
-          canDrag: true,
-          canDrop: false,
-          type: 'Input',
-          props: {},
-        },
-        {
-          id: '1-1-1',
-          canDrag: true, // 能否拖动
-          canDrop: true, // 能否放置拖动组件
-          accept: allTypes,
-          type: 'LayoutRow', // 组件类型
-          props: {}, // 组件的属性
-          children: [
-            {
-              id: '1-1-1-2',
-              canDrag: true,
-              canDrop: false,
-              type: 'Button',
-              props: {},
-            },
-          ],
-        },
-        {
-          id: '1-2',
-          canDrag: true,
-          canDrop: false,
-          type: 'Input',
-          props: {},
-        },
-      ],
-    },
-  ];
-  const initData = (
-    components: Global.Components,
-    parant?: Global.DropComponentProps,
-  ) => {
-    components.forEach((options) => {
-      const { children } = options;
-      options.parent = parant;
-      if (children) initData(children, options);
-    });
-  };
-  initData(defaultValue);
-  return defaultValue;
-};
+// const getPageConfig = () => {
+//   const defaultValue: Global.Components = [
+//     {
+//       id: '1',
+//       canDrag: false, // 能否拖动
+//       canDrop: true, // 能否放置拖动组件
+//       accept: allTypes,
+//       type: 'LayoutRow', // 组件类型
+//       props: {}, // 组件的属性
+//       children: [
+//         {
+//           id: '1-3',
+//           canDrag: true,
+//           canDrop: false,
+//           type: 'Input',
+//           props: {},
+//         },
+//         {
+//           id: '1-1-1',
+//           canDrag: true, // 能否拖动
+//           canDrop: true, // 能否放置拖动组件
+//           accept: allTypes,
+//           type: 'LayoutRow', // 组件类型
+//           props: {}, // 组件的属性
+//           children: [
+//             {
+//               id: '1-1-1-2',
+//               canDrag: true,
+//               canDrop: false,
+//               type: 'Button',
+//               props: {},
+//             },
+//           ],
+//         },
+//         {
+//           id: '1-2',
+//           canDrag: true,
+//           canDrop: false,
+//           type: 'Input',
+//           props: {},
+//         },
+//       ],
+//     },
+//   ];
+//   const initData = (
+//     components: Global.Components,
+//     parant?: Global.DropComponentProps,
+//   ) => {
+//     components.forEach((options) => {
+//       const { children } = options;
+//       options.parent = parant;
+//       if (children) initData(children, options);
+//     });
+//   };
+//   initData(defaultValue);
+//   return defaultValue;
+// };
 
 const Comp: React.FC = () => {
   const DropData = useMobx('DropData');
 
   const [components, setComponents] = useState<Global.Components>(
-    getDefaultValue(),
+    getPageConfig(''),
   );
 
   // id 映射组件
@@ -213,20 +212,20 @@ const Comp: React.FC = () => {
     return components.map((options) => {
       const { children, type, props, id } = options;
       const Comp = componentsObject[type];
-      // if (isFirst) {
-      //   return (
-      //     <Drop
-      //       key={id}
-      //       data={options}
-      //       drop={dropCallback}
-      //       hover={hoverCallback}
-      //       style={{ padding: '30px' }}
-      //       direction={options.direction}
-      //     >
-      //       {children && children[0] && getConpmnents(children)}
-      //     </Drop>
-      //   );
-      // }
+      if (isFirst) {
+        return (
+          <Drop
+            key={id}
+            data={options}
+            drop={dropCallback}
+            hover={hoverCallback}
+            style={{ minHeight: '50%' }}
+            direction={options.direction}
+          >
+            {children && children[0] && getConpmnents(children)}
+          </Drop>
+        );
+      }
       return (
         <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
           <Drop
