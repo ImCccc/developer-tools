@@ -1,7 +1,16 @@
+// 拖动的组件
+
 declare namespace Global {
   type ObjectProps = { [key: string]: any };
 
-  type ComponentTypes = 'Item1' | 'Item2' | 'Item3' | 'Item4' | 'Item5';
+  type ComponentTypes =
+    | 'Select'
+    | 'Button'
+    | 'Input'
+    | 'DatePicker'
+    | 'LayoutRow'
+    | 'LayoutColumn'
+    | 'TableList';
 
   type DragComponentProps = DropComponentProps;
 
@@ -38,6 +47,7 @@ declare namespace Global {
     begin?: (param?: any) => void;
     end?: (param?: any) => void;
     className?: string;
+    style?: CSSProperties;
     children: any;
     data: DragComponentProps;
     onClick?: (data: DragComponentProps) => void;

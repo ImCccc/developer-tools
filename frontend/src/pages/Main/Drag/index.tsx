@@ -9,6 +9,7 @@ const Drag: React.FC<Global.DragProps> = ({
   end,
   begin,
   data,
+  style,
 }) => {
   const type = useMemo(() => data.type, [data]);
 
@@ -32,7 +33,7 @@ const Drag: React.FC<Global.DragProps> = ({
   });
 
   return (
-    <div id={data.id} ref={drager} className={className}>
+    <div style={style} id={data.id} ref={drager} className={className}>
       {children}
     </div>
   );

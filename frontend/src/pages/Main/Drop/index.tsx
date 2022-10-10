@@ -1,12 +1,11 @@
 // react dnd api: https://react-dnd.github.io/react-dnd/docs/api/drop-target-monitor/
-// 接收拖动组件的组件
-import React, { useCallback, useMemo, useRef } from 'react';
+import useMobx from '@/stores';
 import { useDrop } from 'react-dnd';
 import classNames from 'classnames';
-import DropId from '@/stores';
-import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
+import { observer } from 'mobx-react-lite';
 import { allTypes, VirtualId } from '@/components/DragList';
+import React, { useCallback, useMemo, useRef } from 'react';
 
 const Comp: React.FC<Global.DropProps> = ({
   data,
@@ -16,6 +15,8 @@ const Comp: React.FC<Global.DropProps> = ({
   children,
   direction = 'column',
 }) => {
+  const DropData = useMobx('DropData');
+
   const dropRef = useRef<HTMLDivElement>(null);
 
   const id = useMemo(() => data.id, [data]);
@@ -59,8 +60,8 @@ const Comp: React.FC<Global.DropProps> = ({
         thisMousePosition = middle > y - left ? 'left' : 'right';
       }
 
-      if (DropId.id !== id) {
-        DropId.id = id;
+      if (DropData.id !== id) {
+        DropData.id = id;
         hover && hover(data, dragData, thisMousePosition);
       } else {
         if (thisMousePosition === mousePosition.current) return;
@@ -85,9 +86,9 @@ const Comp: React.FC<Global.DropProps> = ({
   const click = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       e.stopPropagation();
-      DropId.selectedId = id || '';
+      DropData.selectedId = id || '';
     },
-    [id],
+    [DropData, id],
   );
 
   return (
@@ -97,13 +98,13 @@ const Comp: React.FC<Global.DropProps> = ({
       style={{
         ...style,
         cursor: data.canDrag ? 'move' : '',
-        border: DropId.selectedId === id ? '1px solid #2196f3' : '',
+        border: DropData.selectedId === id ? '1px solid #2196f3' : '',
       }}
       className={classNames({
         [styles[direction]]: true,
         [styles.empty]: !children,
         [styles.drop]: data.canDrop,
-        [styles.active]: DropId.id === id,
+        [styles.active]: DropData.id === id,
         [styles.virtual]: id === VirtualId,
       })}
     >

@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
+export type StoreType = typeof stores;
 
-class DropId {
+class DropData {
   // 拖动到目标元素,目标元素的 id
   dropComponentId = '';
 
@@ -28,4 +29,10 @@ class DropId {
   }
 }
 
-export default new DropId();
+const stores = {
+  DropData: new DropData(),
+};
+
+export default function useMobx<T extends keyof StoreType>(storeName: T) {
+  return stores[storeName];
+}

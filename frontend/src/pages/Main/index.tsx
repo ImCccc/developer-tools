@@ -1,51 +1,24 @@
 // 拖动的组件
 import {
   allTypes,
+  VirtualId,
   dragComponentList,
   getConpmnentByType,
-  VirtualId,
+  componentsObject,
 } from '@/components/DragList';
 import React, { useEffect, useMemo, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Drag from './Drag';
 import Drop from './Drop';
-import DropId from '@/stores';
+import useMobx from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
-// import { dryConfirm } from '@/utils/util';
+import { dryConfirm } from '@/utils/util';
 
 function clone<T>(data: T) {
   return JSON.parse(JSON.stringify(data)) as T;
 }
-
-const Item1: React.FC<{ children: any }> = ({ children }) => (
-  <div style={{ background: 'antiquewhite', height: '40px' }}>{children}</div>
-);
-
-const Item2: React.FC<{ children: any }> = ({ children }) => (
-  <div style={{ background: 'antiquewhite', height: '40px' }}>{children}</div>
-);
-
-const Item3: React.FC<{ children: any }> = ({ children }) => (
-  <div style={{ background: 'antiquewhite', height: '40px' }}>{children}</div>
-);
-
-const Item4: React.FC<{ children: any }> = ({ children }) => (
-  <div style={{ background: 'antiquewhite', padding: '40px' }}>{children}</div>
-);
-
-const Item5: React.FC<{ children: any }> = ({ children }) => (
-  <div style={{ background: 'antiquewhite', padding: '40px' }}>{children}</div>
-);
-
-const componentsObject = {
-  Item1,
-  Item2,
-  Item3,
-  Item4,
-  Item5,
-};
 
 const getDefaultValue = () => {
   const defaultValue: Global.Components = [
@@ -54,14 +27,14 @@ const getDefaultValue = () => {
       canDrag: false, // 能否拖动
       canDrop: true, // 能否放置拖动组件
       accept: allTypes,
-      type: 'Item4', // 组件类型
+      type: 'LayoutRow', // 组件类型
       props: {}, // 组件的属性
       children: [
         {
           id: '1-3',
           canDrag: true,
           canDrop: false,
-          type: 'Item3',
+          type: 'Input',
           props: {},
         },
         {
@@ -69,21 +42,21 @@ const getDefaultValue = () => {
           canDrag: true, // 能否拖动
           canDrop: true, // 能否放置拖动组件
           accept: allTypes,
-          type: 'Item4', // 组件类型
+          type: 'LayoutRow', // 组件类型
           props: {}, // 组件的属性
           children: [
             {
               id: '1-1-1-1',
               canDrag: true,
               canDrop: false,
-              type: 'Item1',
+              type: 'Input',
               props: {},
             },
             {
               id: '1-1-1-2',
               canDrag: true,
               canDrop: false,
-              type: 'Item3',
+              type: 'Input',
               props: {},
             },
           ],
@@ -92,14 +65,14 @@ const getDefaultValue = () => {
           id: '1-1-2',
           canDrag: true,
           canDrop: false,
-          type: 'Item3',
+          type: 'Input',
           props: {},
         },
         {
           id: '1-2',
           canDrag: true,
           canDrop: false,
-          type: 'Item3',
+          type: 'Input',
           props: {},
         },
       ],
@@ -123,6 +96,8 @@ const getDefaultValue = () => {
 };
 
 const Comp: React.FC = () => {
+  const DropData = useMobx('DropData');
+
   const [components, setComponents] = useState<Global.Components>(
     getDefaultValue(),
   );
@@ -233,7 +208,7 @@ const Comp: React.FC = () => {
     if (dom) dom.style.display = '';
 
     deleteVirtual();
-    DropId.id = '';
+    DropData.id = '';
     setComponents([...components]);
   };
 
@@ -263,7 +238,7 @@ const Comp: React.FC = () => {
             hover={hoverCallback}
             direction={options.direction}
           >
-            <Comp {...props}>{id}</Comp>
+            <Comp {...props}></Comp>
           </Drop>
         </Drag>
       );
@@ -273,10 +248,10 @@ const Comp: React.FC = () => {
   // 删除组件逻辑
   useEffect(() => {
     const keyupCallback = async (e: KeyboardEvent) => {
-      const selectedId = DropId.selectedId;
+      const selectedId = DropData.selectedId;
       if (e.code.toLocaleLowerCase() !== 'delete' || !selectedId) return;
 
-      // await dryConfirm('确定删除组件及其子元素?');
+      await dryConfirm('确定删除组件及其子元素?');
       const deleteItem = idMapComponent[selectedId];
       const parent = deleteItem.parent;
 
@@ -301,17 +276,25 @@ const Comp: React.FC = () => {
     document.addEventListener('keyup', keyupCallback);
 
     return () => document.removeEventListener('keyup', keyupCallback);
-  }, [components, idMapComponent]);
+  }, [DropData, components, idMapComponent]);
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className={styles.page}>
         <div className={styles.side}>
-          {dragComponentList.map((comp) => {
+          {dragComponentList.map((options) => {
+            const comps = options.children;
             return (
-              <Drag end={dragEnd} key={comp.type} data={comp}>
-                {getConpmnentByType(comp.type)}
-              </Drag>
+              <div key={options.name} className={styles.layout}>
+                <div className={styles.title}>{options.name}</div>
+                {comps.map((comp) => {
+                  return (
+                    <Drag data={comp} end={dragEnd} key={comp.type}>
+                      {getConpmnentByType(comp.type)}
+                    </Drag>
+                  );
+                })}
+              </div>
             );
           })}
         </div>
