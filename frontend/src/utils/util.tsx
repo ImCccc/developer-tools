@@ -41,18 +41,62 @@ export function JSONclone<T>(object: T) {
   return JSON.parse(JSON.stringify(object)) as T;
 }
 
+const _initConfig = (
+  components: Global.Components,
+  parant?: Global.DropComponentProps,
+) => {
+  components.forEach((options) => {
+    const { children } = options;
+    options.parent = parant;
+    if (children) _initConfig(children, options);
+  });
+};
+
 export const getPageConfig = (routeName: string) => {
   let defaultValue: Global.Components = [
     {
       id: '1',
-      props: {},
-      children: [],
-      canDrop: true,
-      canDrag: false,
+      canDrag: false, // 能否拖动
+      canDrop: true, // 能否放置拖动组件
       accept: allTypes,
-      type: 'LayoutRow',
+      type: 'LayoutRow', // 组件类型
+      props: {}, // 组件的属性
+      children: [
+        {
+          id: '1-3',
+          canDrag: true,
+          canDrop: false,
+          type: 'Input',
+          props: {},
+        },
+        {
+          id: '1-1-1',
+          canDrag: true, // 能否拖动
+          canDrop: true, // 能否放置拖动组件
+          accept: allTypes,
+          type: 'LayoutRow', // 组件类型
+          props: {}, // 组件的属性
+          children: [
+            {
+              id: '1-1-1-2',
+              canDrag: true,
+              canDrop: false,
+              type: 'Button',
+              props: {},
+            },
+          ],
+        },
+        {
+          id: '1-2',
+          canDrag: true,
+          canDrop: false,
+          type: 'Input',
+          props: {},
+        },
+      ],
     },
   ];
+  _initConfig(defaultValue);
 
   const configStr = localStorage.getItem('PAGE-CACHE-' + routeName);
   if (!configStr) return defaultValue;
@@ -60,17 +104,7 @@ export const getPageConfig = (routeName: string) => {
   try {
     defaultValue = JSON.parse(configStr);
     if (!defaultValue.length) return defaultValue;
-    const initData = (
-      components: Global.Components,
-      parant?: Global.DropComponentProps,
-    ) => {
-      components.forEach((options) => {
-        const { children } = options;
-        options.parent = parant;
-        if (children) initData(children, options);
-      });
-    };
-    initData(defaultValue);
+    _initConfig(defaultValue);
   } catch (error) {}
 
   return defaultValue;
