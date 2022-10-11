@@ -13,6 +13,7 @@ const Comp: React.FC<Global.DropProps> = ({
   hover,
   style,
   children,
+  className,
   direction = 'column',
 }) => {
   const DropData = useMobx('DropData');
@@ -52,12 +53,23 @@ const Comp: React.FC<Global.DropProps> = ({
       let middle = (bottom - top) / 2;
       let y = monitor.getClientOffset()?.y || 0;
       if (!y) return;
+
       let thisMousePosition = middle > y - top ? 'up' : 'down';
 
       if (data.direction === 'row') {
         middle = (right - left) / 2;
         y = monitor.getClientOffset()?.x || 0;
         thisMousePosition = middle > y - left ? 'left' : 'right';
+      }
+
+      // 处理有高度的布局组件, 一般最外层布局
+      if (data.children && data.children[0]) {
+        if (y - top > 40) {
+          thisMousePosition = 'down';
+        }
+        if (data.direction === 'row' && y - left > 80) {
+          thisMousePosition = 'right';
+        }
       }
 
       if (DropData.id !== id) {
@@ -100,7 +112,7 @@ const Comp: React.FC<Global.DropProps> = ({
         cursor: data.canDrag ? 'move' : '',
         border: DropData.selectedId === id ? '1px solid #2196f3' : '',
       }}
-      className={classNames({
+      className={classNames(className, {
         // [styles.active]: DropData.id === id,
         [styles[direction]]: true,
         [styles.empty]: !children,

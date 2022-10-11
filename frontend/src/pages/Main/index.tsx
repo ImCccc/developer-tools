@@ -159,28 +159,43 @@ const Comp: React.FC = () => {
     deleteVirtualLoop();
   };
 
-  const getConpmnents = (components: Global.Components) => {
-    return components.map((options) => {
-      const { children, type, props, id } = options;
-      const Comp = componentsObject[type];
-      const content = children ? (
-        children[0] && getConpmnents(children)
-      ) : (
-        <Comp {...props}></Comp>
-      );
-      return (
-        <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
-          <Drop
-            data={options}
-            drop={dropCallback}
-            hover={hoverEvent}
-            direction={options.direction}
-          >
-            {content}
-          </Drop>
-        </Drag>
-      );
-    });
+  const getEditComponent = () => {
+    const firstChild = components[0];
+    const children = firstChild.children || [];
+    const _getConpmnents = (components: Global.Components) => {
+      return components.map((options) => {
+        const { children, type, props, id } = options;
+        const Comp = componentsObject[type];
+        const content = children ? (
+          children[0] && _getConpmnents(children)
+        ) : (
+          <Comp {...props}></Comp>
+        );
+        return (
+          <Drag end={dragEnd} begin={dragBegin} data={options} key={id}>
+            <Drop
+              data={options}
+              hover={hoverEvent}
+              drop={dropCallback}
+              direction={options.direction}
+            >
+              {content}
+            </Drop>
+          </Drag>
+        );
+      });
+    };
+    return (
+      <Drop
+        data={firstChild}
+        hover={hoverEvent}
+        drop={dropCallback}
+        className={styles.content}
+        direction={firstChild.direction}
+      >
+        {_getConpmnents(children)}
+      </Drop>
+    );
   };
 
   // 删除组件逻辑
@@ -226,7 +241,7 @@ const Comp: React.FC = () => {
             );
           })}
         </div>
-        <div className={styles.content}>{getConpmnents(components)}</div>
+        {getEditComponent()}
       </div>
     </DndProvider>
   );
