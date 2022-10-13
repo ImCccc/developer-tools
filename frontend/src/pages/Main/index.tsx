@@ -15,6 +15,8 @@ import Drop from './Drop';
 import useMobx from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
+import Menu from '@/components/Menu';
+import { Input } from 'antd';
 
 const Comp: React.FC = () => {
   const DropData = useMobx('DropData');
@@ -241,7 +243,24 @@ const Comp: React.FC = () => {
             );
           })}
         </div>
+        <Menu />
         {getEditComponent()}
+
+        <div className={styles.props}>
+          <div className={styles.title}>设置组件属性</div>
+          <div className={styles.formitem}>
+            <span>颜色</span>
+            <Input size="small"></Input>
+          </div>
+          <div className={styles.formitem}>
+            <span>高度</span>
+            <Input size="small"></Input>
+          </div>
+          <div className={styles.formitem}>
+            <span>宽度</span>
+            <Input size="small"></Input>
+          </div>
+        </div>
       </div>
     </DndProvider>
   );

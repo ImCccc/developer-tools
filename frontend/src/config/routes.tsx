@@ -8,6 +8,10 @@ const routes: RouteObject[] = [
     path: '/',
     element: <Main />,
   },
+  {
+    path: '*',
+    element: <Main />,
+  },
 ];
 
 export default routes;

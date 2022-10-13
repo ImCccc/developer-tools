@@ -64,7 +64,7 @@ const Comp: React.FC<Global.DropProps> = ({
 
       // 处理有高度的布局组件, 一般最外层布局
       if (data.children && data.children[0]) {
-        if (y - top > 40) {
+        if (y - top > 80) {
           thisMousePosition = 'down';
         }
         if (data.direction === 'row' && y - left > 80) {

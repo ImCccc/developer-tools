@@ -101,6 +101,19 @@ export const dragComponentList: DragComponentListProps[] = [
       },
     ],
   },
+
+  {
+    name: '高阶组件',
+    children: [
+      {
+        type: 'Button', // 组件类型
+        props: {},
+        id: VirtualId,
+        canDrag: true,
+        canDrop: false,
+      },
+    ],
+  },
 ];
 
 const LayoutRow: React.FC<{ children: any }> = ({ children }) => (

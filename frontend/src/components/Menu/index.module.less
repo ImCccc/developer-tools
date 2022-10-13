@@ -1,0 +1,18 @@
+@menu-width: 160px;
+
+.menuwrap {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  max-width: @menu-width;
+}
+
+.menu {
+  flex-grow: 1;
+  width: @menu-width;
+  overflow: auto;
+  overflow-x: hidden;
+  :global(.ant-menu-item) {
+    margin-top: 0;
+  }
+}
