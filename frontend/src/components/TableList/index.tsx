@@ -7,15 +7,10 @@ import React, {
 } from 'react';
 import type { ColumnType } from 'antd/lib/table';
 import { remToNumber } from '@/utils/util';
-import { Table, TableProps, ButtonProps, Button } from 'antd';
+import { Table, TableProps, Button } from 'antd';
 
 export type TableListColumns<T> = (ColumnType<T> & {
-  operList?: {
-    confirmKey?: string;
-    buttonProps?: ButtonProps;
-    label: string;
-    callback: (row: T) => any;
-  }[];
+  operList?: { label: string }[];
   timeFormat?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss';
 })[];
 
@@ -24,19 +19,18 @@ export type TableListProps<T> = {
 } & TableProps<any>;
 
 const service = (column: TableListColumns<any>) => {
-  const list: any = [];
+  const list = [];
   const total = 200;
   for (let i = 0; i < total; i++) {
-    const defaultValue = column.reduce(
-      (data, cur) => {
-        data[cur.dataIndex as string] = `假数据-${
-          i + 1
-        }-${Math.random()}`.slice(0, 10);
-        return data;
-      },
-      { id: 'id' + Math.random() },
+    list.push(
+      column.reduce(
+        (data, cur) => {
+          data[cur.dataIndex as string] = `数据-${i + 1}`.slice(0, 10);
+          return data;
+        },
+        { id: 'id' + Math.random() },
+      ),
     );
-    list.push(defaultValue);
   }
   return { list, total };
 };
@@ -45,37 +39,27 @@ const service = (column: TableListColumns<any>) => {
 const TableList: React.FC<TableListProps<any>> = ({ columns }) => {
   // 表格数据
   const [data, setData] = useState<any[]>([]);
+
   // 数据总数
   const [total, setTotal] = useState<number>(0);
+
   // 当前页
   const [current, setCurrent] = useState<number>(1);
+
   // 每页条数
   const [pageSize, setPageSize] = useState<number>(5);
+
   // table的ref
   const tableRef = useRef<HTMLDivElement>(null);
+
   // table的scroll
   const [scroll, setScroll] = useState<{ y?: number }>({});
-
-  useEffect(() => {
-    const table = tableRef.current;
-    if (table) {
-      const clientHeight = document.body.clientHeight;
-      const tableHeaderHeight = remToNumber(6);
-      const tablePaginationHeight = remToNumber(8);
-      const tableBodyHeight =
-        clientHeight -
-        table.offsetTop -
-        tableHeaderHeight -
-        tablePaginationHeight;
-      setScroll({ y: tableBodyHeight - 50 });
-    }
-  }, []);
 
   // 计算column
   const _column = useMemo(() => {
     const cols = columns || [
       {
-        title: '测试数据1',
+        title: '文本',
         dataIndex: 'test1',
       },
       {
@@ -139,6 +123,20 @@ const TableList: React.FC<TableListProps<any>> = ({ columns }) => {
 
   useEffect(() => getData(1), [getData]);
 
+  useEffect(() => {
+    const table = tableRef.current;
+    if (table) {
+      const clientHeight = document.body.clientHeight;
+      const tableHeaderHeight = remToNumber(6);
+      const tablePaginationHeight = remToNumber(8);
+      const tableBodyHeight =
+        clientHeight -
+        table.offsetTop -
+        tableHeaderHeight -
+        tablePaginationHeight;
+      setScroll({ y: tableBodyHeight - 50 });
+    }
+  }, []);
   return (
     <Table
       rowKey="id"
@@ -148,6 +146,7 @@ const TableList: React.FC<TableListProps<any>> = ({ columns }) => {
       dataSource={data}
       columns={_column}
       pagination={pagination}
+      style={{ border: '1px solid #ccc' }}
     />
   );
 };
