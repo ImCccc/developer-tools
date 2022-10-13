@@ -1,14 +1,15 @@
 import { Button, DatePicker, Input, Select } from 'antd';
+import TableList from '../TableList';
 import styles from './index.module.less';
 
 export const VirtualId = 'Virtual id';
-
 export const allTypes: Global.ComponentTypes[] = [
   'Select',
   'Button',
   'Input',
-  'DatePicker',
+  'TableList',
   'LayoutRow',
+  'DatePicker',
   'LayoutColumn',
 ];
 
@@ -41,6 +42,11 @@ export const getConpmnentByType = (type: Global.ComponentTypes) => {
   if (type === 'LayoutColumn') {
     return <div className={styles.layout}>行布局</div>;
   }
+
+  if (type === 'TableList') {
+    return <div className={styles.layout}>Table</div>;
+  }
+
   return undefined;
 };
 
@@ -101,12 +107,11 @@ export const dragComponentList: DragComponentListProps[] = [
       },
     ],
   },
-
   {
     name: '高阶组件',
     children: [
       {
-        type: 'Button', // 组件类型
+        type: 'TableList', // 组件类型
         props: {},
         id: VirtualId,
         canDrag: true,
@@ -124,10 +129,6 @@ const LayoutColumn: React.FC<{ children: any }> = ({ children }) => (
   <div style={{ background: 'antiquewhite', padding: '40px' }}>{children}</div>
 );
 
-const ThisButton: React.FC = (props: any) => {
-  return <Button {...props}>按钮</Button>;
-};
-
 const ThisSelect: React.FC = (props: any) => (
   <Select placeholder="请选择" {...props} />
 );
@@ -136,7 +137,12 @@ const ThisInput: React.FC = (props: any) => (
   <Input placeholder="请输入" {...props} />
 );
 
+const ThisButton: React.FC = (props: any) => {
+  return <Button {...props}>按钮</Button>;
+};
+
 export const componentsObject = {
+  TableList,
   LayoutRow,
   DatePicker,
   LayoutColumn,

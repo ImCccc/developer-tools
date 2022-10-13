@@ -1,7 +1,7 @@
 // 拖动的组件
 
 declare namespace Global {
-  type ObjectProps = { [key: string]: any };
+  type ObjectProps = any;
 
   type ComponentTypes =
     | 'Select'

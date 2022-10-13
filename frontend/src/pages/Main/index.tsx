@@ -6,7 +6,7 @@ import {
   getConpmnentByType,
 } from '@/components/DragList';
 import React, { useEffect, useMemo, useState } from 'react';
-import { dryConfirm, getPageConfig, JSONclone } from '@/utils/util';
+import { deleteConfirm, getPageConfig, JSONclone } from '@/utils/util';
 import { useDebounceFn } from 'ahooks';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -206,7 +206,7 @@ const Comp: React.FC = () => {
       const selectedId = DropData.selectedId;
       if (e.code.toLocaleLowerCase() !== 'delete' || !selectedId) return;
 
-      await dryConfirm('确定删除组件及其子元素?');
+      await deleteConfirm('确定删除组件及其子元素?');
       const deleteItem = idMapComponent[selectedId];
       const parent = deleteItem.parent;
 
@@ -245,7 +245,6 @@ const Comp: React.FC = () => {
         </div>
         <Menu />
         {getEditComponent()}
-
         <div className={styles.props}>
           <div className={styles.title}>设置组件属性</div>
           <div className={styles.formitem}>

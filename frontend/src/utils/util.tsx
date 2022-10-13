@@ -1,5 +1,5 @@
 import { allTypes } from '@/components/DragList';
-import { Modal } from 'antd';
+import { Modal, ModalFuncProps } from 'antd';
 
 export function updateObjectByString<T>(object: T, keys: string, value: any) {
   if (!object) return object;
@@ -62,35 +62,28 @@ export const getPageConfig = (routeName: string) => {
       type: 'LayoutRow', // 组件类型
       props: {}, // 组件的属性
       children: [
-        {
-          id: '1-3',
-          canDrag: true,
-          canDrop: false,
-          type: 'Input',
-          props: {},
-        },
-        {
-          id: '1-1-1',
-          canDrag: true, // 能否拖动
-          canDrop: true, // 能否放置拖动组件
-          accept: allTypes,
-          type: 'LayoutRow', // 组件类型
-          props: {}, // 组件的属性
-          children: [
-            {
-              id: '1-1-1-2',
-              canDrag: true,
-              canDrop: false,
-              type: 'Button',
-              props: {},
-            },
-          ],
-        },
+        // {
+        //   id: '1-1-1',
+        //   canDrag: true, // 能否拖动
+        //   canDrop: true, // 能否放置拖动组件
+        //   accept: allTypes,
+        //   type: 'LayoutRow', // 组件类型
+        //   props: {}, // 组件的属性
+        //   children: [
+        //     {
+        //       id: '1-1-1-2',
+        //       canDrag: true,
+        //       canDrop: false,
+        //       type: 'Button',
+        //       props: {},
+        //     },
+        //   ],
+        // },
         {
           id: '1-2',
           canDrag: true,
           canDrop: false,
-          type: 'Input',
+          type: 'TableList',
           props: {},
         },
       ],
@@ -110,12 +103,18 @@ export const getPageConfig = (routeName: string) => {
   return defaultValue;
 };
 
-export const dryConfirm = (content: string) => {
-  return new Promise((resolve, reject) => {
+export const deleteConfirm = (title?: string, props?: ModalFuncProps) => {
+  return new Promise<void>((resolve, reject) => {
     Modal.confirm({
-      content,
-      onOk: () => resolve(true),
+      title: title || `确定要删除`,
+      onOk: async () => resolve(),
       onCancel: () => reject(),
+      ...props,
     });
   });
+};
+
+export const remToNumber = (value: number) => {
+  const times = screen.width / 1920;
+  return value * 10 * times;
 };
