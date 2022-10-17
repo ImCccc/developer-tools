@@ -1,32 +1,31 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import { createStyleImportPlugin } from 'vite-plugin-style-import';
+// import { createStyleImportPlugin } from 'vite-plugin-style-import';
 
 export default defineConfig({
   plugins: [
     react(),
-
-    createStyleImportPlugin({
-      libs: [
-        {
-          esModule: true,
-          libraryName: 'antd',
-          resolveStyle: (name: string) => `antd/es/${name}/style/index`,
-        },
-      ],
-    }),
+    // createStyleImportPlugin({
+    //   libs: [
+    //     {
+    //       esModule: true,
+    //       libraryName: 'antd',
+    //       resolveStyle: (name: string) => `antd/es/${name}/style/index`,
+    //     },
+    //   ],
+    // }),
   ],
 
-  css: {
-    preprocessorOptions: {
-      less: {
-        javascriptEnabled: true,
-        modifyVars: {
-          '@primary-color': '#213c9e',
-        },
-      },
-    },
-  },
+  // css: {
+  //   preprocessorOptions: {
+  //     less: {
+  //       javascriptEnabled: true,
+  //       modifyVars: {
+  //         '@primary-color': '#213c9e',
+  //       },
+  //     },
+  //   },
+  // },
 
   // 别名
   resolve: {

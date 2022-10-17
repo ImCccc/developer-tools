@@ -37,7 +37,7 @@ declare namespace Global {
     drop?: (dropData: DropComponentProps, dragData: any, monitor: any) => void;
     hover?: (
       dropData: DropComponentProps,
-      dragData: any,
+      dragData: DropComponentProps,
       mousePosition: string,
     ) => void;
   };
