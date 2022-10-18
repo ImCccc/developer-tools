@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+
+  <script>
+    const useCallbackTpl = `useCallback((data: any) => { \n  console.log(data); \n}, []);`;
+
+    function isObject(data) {
+      return Object.prototype.toString.call(data) === "[object Object]";
+    }
+
+    function isArray(data) {
+      return Object.prototype.toString.call(data) === "[object Array]";
+    }
+
+    function isFunction(data) {
+      return Object.prototype.toString.call(data) === "[object Function]";
+    }
+
+    function functionToString(useMemos) {
+      function loop(data) {
+        if (isArray(data)) {
+          data.forEach((item) => {
+            if (isArray(item) || isObject(item)) loop(item);
+          });
+        }
+        if (isObject(data)) {
+          Object.keys(data).forEach((key) => {
+            const item = data[key];
+            if (isFunction(item)) {
+              data[key] = `-function-${data[key].toString()}-function-`;
+            }
+            if (isArray(item) || isObject(item)) {
+              loop(item);
+            }
+          });
+        }
+      }
+      loop(useMemos);
+    }
+
+    function objectToString(data, space = "") {
+      return JSON.stringify(data, null, 2)
+        .replaceAll(`"-function-`, "")
+        .replaceAll(`-function-"`, "")
+        .replaceAll(`\n`, "\n" + space);
+    }
+
+    let hookNameIndex = 0;
+    const allHooks = {
+      import: {
+        react: {
+          useRef: true,
+          useState: true,
+          useCallback: true,
+        },
+        "@/components/TableSearch": {
+          default: true,
+          FieldsItemProps: true,
+        },
+        "@/components/UploadXlsx": {
+          default: "UploadXlsx",
+        },
+      },
+
+      useMemo: {
+        columns: {
+          type: "TableListColumns<any>",
+          data: [
+            {
+              title: "设备类型",
+              dataIndex: "product_id",
+            },
+            {
+              title: "上传时间",
+              dataIndex: "date_created",
+              timeFormat: "YYYY-MM-DD HH:mm:ss",
+            },
+            {
+              width: 150,
+              operList: [
+                {
+                  label: "编辑",
+                  callback: (row) => console.log(row),
+                },
+                {
+                  label: "删除",
+                  callback: (row) => console.log(row),
+                },
+              ],
+            },
+          ],
+        },
+        searchFields: {
+          type: "FieldsProps",
+          data: [
+            {
+              options: [],
+              type: "Select",
+              label: "设备类型",
+              key: "product_id",
+              placeholder: "请选择设备类型",
+            },
+          ],
+        },
+      },
+
+      useCallback: {
+        onSearch: `const onSearch = ${useCallbackTpl}`,
+        onSubmit: `const onSubmit = ${useCallbackTpl}`,
+      },
+
+      useRef: {
+        tableRef: {
+          type: "TableListRef",
+        },
+        tableRef1: {
+          type: "TableListRef",
+          defaultValue: '""',
+        },
+      },
+
+      useState: {
+        tableParams: {
+          type: "any",
+        },
+        tableParams1: {
+          type: "string",
+          defaultValue: "1",
+        },
+      },
+    };
+
+    // 获取 hooks 名称, 有时候可能重复, 所以需要判断
+    const getHooksName = (name) => {
+      return `${name}_${++hookNameIndex}`;
+    };
+
+    const addHooks = (hooks, name, value) => {
+      const targetObject = allHooks[hooks];
+      if (!targetObject) {
+        targetObject = {};
+        allHooks[hooks] = targetObject;
+      }
+      if (targetObject[name]) {
+        name = getHooksName(name);
+      }
+      targetObject[name] = value;
+    };
+
+    addHooks("useMemo", "columns", {});
+    console.log(JSON.stringify(allHooks, null, 2));
+
+    const getImportTpl = (data) => {
+      data = JSON.parse(JSON.stringify(data));
+      const imporsList = Object.keys(data).map((path) => {
+        let str = "";
+        let defaultImport = "";
+        const imports = data[path];
+        if (imports.default) {
+          defaultImport = imports.default;
+          if (imports.default === true) {
+            defaultImport = path.split("/").slice(-1)[0];
+          } else {
+            defaultImport = imports.default;
+          }
+          delete imports.default;
+        }
+        const otherImports = Object.keys(imports);
+        if (otherImports.length === 0) {
+          str = `import ${defaultImport} from '${path}';`;
+        } else {
+          const otherImportsTpl = `{ ${otherImports.join(", ")} }`;
+          if (defaultImport) {
+            str = `import ${defaultImport}, ${otherImportsTpl} from '${path}';`;
+          } else {
+            str = `import ${otherImportsTpl} from '${path}';`;
+          }
+        }
+        return str;
+      });
+      return imporsList.join(`\n`);
+    };
+    console.error("import: --------------------------");
+    console.log(getImportTpl(allHooks.import));
+
+    const getUseMemoTpl = (useMemos) => {
+      if (useMemos) functionToString(useMemos);
+      return Object.keys(useMemos)
+        .map((name) => {
+          const { type, data } = useMemos[name];
+          if (!type || !data) return "";
+          const dataStr = objectToString(data, "  ");
+          return `const ${name}: ${type} = useMemo(() => { \n  return ${dataStr};\n}, []);`;
+        })
+        .join(`\n\n`);
+    };
+    console.error("useMemo: --------------------------");
+    console.log(getUseMemoTpl(allHooks.useMemo));
+
+    const getUseCallbackTpl = (useCallbacks) => {
+      return Object.keys(useCallbacks)
+        .map((key) => {
+          return useCallbacks[key];
+        })
+        .join(`\n\n`);
+    };
+    console.error("useCallback: --------------------------");
+    console.log(getUseCallbackTpl(allHooks.useCallback));
+
+    const getUseRefsTpl = (useRefs) => {
+      return Object.keys(useRefs)
+        .map((key) => {
+          const { type, defaultValue } = useRefs[key];
+          return `const ${key} = useRef<${type}>(${defaultValue || ""});`;
+        })
+        .join(`\n`);
+    };
+    console.error("useRef: --------------------------");
+    console.log(getUseRefsTpl(allHooks.useRef));
+
+    const getUseStates = (useStates) => {
+      return Object.keys(useStates)
+        .map((key) => {
+          const { type, defaultValue } = useStates[key];
+          const setStr = key[0].toUpperCase() + key.slice(1);
+          return `const [${key}, set${setStr}] = useState<${type}>(${
+            defaultValue || ""
+          });`;
+        })
+        .join(`\n`);
+    };
+    console.error("useStates: --------------------------");
+    console.log(getUseStates(allHooks.useState));
+  </script>
+</html>
