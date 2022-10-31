@@ -82,7 +82,7 @@ const Comp: React.FC<Global.DropProps> = ({
       }
     },
 
-    // 东西放下了, 触发一次, props 就是拖动组件传递过来的数据
+    // 东西放下了, 触发一次, dragData 就是拖动组件传递过来的数据
     drop: (dragData, monitor) => {
       if (!dropRef.current) return;
       if (!monitor.isOver({ shallow: true })) return;
@@ -95,7 +95,7 @@ const Comp: React.FC<Global.DropProps> = ({
 
   droper(dropRef);
 
-  const click = useCallback(
+  const doubleClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       e.stopPropagation();
       DropData.selectedId = id || '';
@@ -103,22 +103,26 @@ const Comp: React.FC<Global.DropProps> = ({
     [DropData, id],
   );
 
+  const _style = {
+    ...style,
+    cursor: data.canDrag ? 'move' : '',
+    border: DropData.selectedId === id ? '1px solid #2196f3' : '',
+  };
+
+  const _className = classNames(className, {
+    // [styles.active]: DropData.id === id,
+    [styles[direction]]: true,
+    [styles.empty]: !children,
+    [styles.drop]: data.canDrop,
+    [styles.virtual]: id === VirtualId,
+  });
+
   return (
     <div
       ref={dropRef}
-      onClick={click}
-      style={{
-        ...style,
-        cursor: data.canDrag ? 'move' : '',
-        border: DropData.selectedId === id ? '1px solid #2196f3' : '',
-      }}
-      className={classNames(className, {
-        // [styles.active]: DropData.id === id,
-        [styles[direction]]: true,
-        [styles.empty]: !children,
-        [styles.drop]: data.canDrop,
-        [styles.virtual]: id === VirtualId,
-      })}
+      style={_style}
+      className={_className}
+      onDoubleClick={doubleClick}
     >
       {children || '请将组件拖到这里'}
     </div>

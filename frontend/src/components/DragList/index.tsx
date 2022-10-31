@@ -112,7 +112,22 @@ export const dragComponentList: DragComponentListProps[] = [
     children: [
       {
         type: 'TableList', // 组件类型
-        props: {},
+        props: {
+          columns: [
+            {
+              title: '文本',
+              dataIndex: 'test1',
+            },
+            {
+              title: '时间',
+              dataIndex: 'test2',
+              timeFormat: 'YYYY-MM-DD',
+            },
+            {
+              operList: [{ label: '编辑' }, { label: '删除' }],
+            },
+          ],
+        },
         id: VirtualId,
         canDrag: true,
         canDrop: false,

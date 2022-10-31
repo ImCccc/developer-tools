@@ -100,7 +100,7 @@ const TableList: React.FC<TableListProps<any>> = ({ columns }) => {
   const getData = useCallback(
     (page: number) => {
       const result = service(_column);
-      console.log(result);
+      // console.log(result);
       setData(result.list);
       setTotal(result.total);
       setCurrent(page);

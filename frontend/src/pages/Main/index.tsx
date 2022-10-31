@@ -5,18 +5,18 @@ import {
   dragComponentList,
   getConpmnentByType,
 } from '@/components/DragList';
-import React, { useEffect, useMemo, useState } from 'react';
-import { deleteConfirm, getPageConfig, JSONclone } from '@/utils/util';
+import Menu from '@/components/Menu';
 import { useDebounceFn } from 'ahooks';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import React, { useEffect, useMemo, useState } from 'react';
+import { deleteConfirm, getPageConfig, JSONclone } from '@/utils/util';
 import Drag from './Drag';
 import Drop from './Drop';
+import Config from './Config';
 import useMobx from '@/stores';
 import { observer } from 'mobx-react-lite';
 import styles from './index.module.less';
-import Menu from '@/components/Menu';
-import { Input } from 'antd';
 
 const Comp: React.FC = () => {
   const DropData = useMobx('DropData');
@@ -38,6 +38,11 @@ const Comp: React.FC = () => {
     initComponentsData(components);
     return idMapComponent as { [key: string]: Global.DropComponentProps };
   }, [components]);
+
+  const selectedComp = useMemo(
+    () => idMapComponent[DropData.selectedId],
+    [DropData.selectedId, idMapComponent],
+  );
 
   // 删除虚拟组件, 有时候速度快的时候, 会产生2个虚拟组件, 需要递归删除
   // 还有一种情况是移动嵌套组件,父子关系会错乱,需要重置
@@ -245,21 +250,7 @@ const Comp: React.FC = () => {
         </div>
         <Menu />
         {getEditComponent()}
-        <div className={styles.props}>
-          <div className={styles.title}>设置组件属性</div>
-          <div className={styles.formitem}>
-            <span>颜色</span>
-            <Input size="small"></Input>
-          </div>
-          <div className={styles.formitem}>
-            <span>高度</span>
-            <Input size="small"></Input>
-          </div>
-          <div className={styles.formitem}>
-            <span>宽度</span>
-            <Input size="small"></Input>
-          </div>
-        </div>
+        <Config selectedComp={selectedComp} />
       </div>
     </DndProvider>
   );

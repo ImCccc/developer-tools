@@ -1,11 +1,11 @@
 import { Input, Radio, Select } from 'antd';
-import DeleteButton from '@/components/DeleteButton';
+import DeleteButton from '../DeleteButton';
 import { updateObjectByString } from '@/utils/util';
-import ConfigLayout from '@/components/ConfigLayout';
-import TypeToList from '@/components/TypeToList';
-import ButtonList from '@/components/ButtonList';
-import AddButton from '@/components/AddButton';
-import Tip from '@/components/Tip';
+import ConfigLayout from '../ConfigLayout';
+import TypeToList from '../TypeToList';
+import ButtonList from '../ButtonList';
+import AddButton from '../AddButton';
+import Tip from '../Tip';
 
 export type ColumnsProps = {
   title: string;

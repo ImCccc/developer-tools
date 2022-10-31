@@ -84,7 +84,22 @@ export const getPageConfig = (routeName: string) => {
           canDrag: true,
           canDrop: false,
           type: 'TableList',
-          props: {},
+          props: {
+            columns: [
+              {
+                title: '文本1',
+                dataIndex: 'test1',
+              },
+              {
+                title: '时间',
+                dataIndex: 'test2',
+                timeFormat: 'YYYY-MM-DD',
+              },
+              {
+                operList: [{ label: '编辑' }, { label: '删除' }],
+              },
+            ],
+          },
         },
       ],
     },
