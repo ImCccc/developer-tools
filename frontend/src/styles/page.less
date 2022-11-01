@@ -30,16 +30,13 @@
 
   &-item {
     display: flex;
-    padding: 10px 0;
+    flex-direction: column;
   }
 
   &-label {
-    width: 100px;
-    flex-shrink: 0;
-    margin-right: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: end;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
   }
 
   &-col {
@@ -72,16 +69,15 @@
 
   &-colitem-right {
     flex-shrink: 0;
+    padding: 0 10px;
   }
 
   &-comp-w {
     flex-shrink: 0;
-    width: 135px !important;
+    width: 100% !important;
   }
 
   &-fold {
-    width: 90%;
-    padding-top: 20px;
     display: flex;
     align-items: center;
   }
@@ -94,4 +90,58 @@
     width: 120px !important;
     margin-right: 10px !important;
   }
+}
+
+.field-col {
+  display: flex;
+  align-items: start;
+  flex-wrap: wrap;
+  > span {
+    flex-shrink: 0;
+    padding: 10px 0;
+  }
+
+  &.header {
+    margin-bottom: 10px;
+    > span {
+      padding: 10px;
+    }
+    font-weight: bold;
+  }
+}
+
+.field-col-1 {
+  width: 150px;
+  margin-right: 10px;
+}
+
+.field-col-2 {
+  width: 150px;
+  margin-right: 10px;
+}
+
+.field-col-3 {
+  width: 100px;
+  margin-right: 10px;
+}
+
+.field-col-4 {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  .select {
+    width: 200px;
+  }
+}
+
+.date-wrap {
+  padding: 10px 0;
+  width: 100%;
+}
+
+.field-col-6 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }

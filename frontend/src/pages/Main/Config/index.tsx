@@ -2,7 +2,6 @@ import { Drawer } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import useMobx from '@/stores';
 import { observer } from 'mobx-react-lite';
-
 import TableListConfig from '@/components/ComponentConfig/TableList';
 
 const typeMapCompoment = {
@@ -10,8 +9,9 @@ const typeMapCompoment = {
 };
 
 const Comp: React.FC<{
+  onChange: (config: any) => void;
   selectedComp: Global.DropComponentProps | undefined;
-}> = ({ selectedComp }) => {
+}> = ({ selectedComp, onChange }) => {
   const DropData = useMobx('DropData');
   const [open, setOpen] = useState(false);
 
@@ -24,19 +24,16 @@ const Comp: React.FC<{
     DropData.selectedId = '';
   };
 
-  useEffect(() => {
-    console.log(selectedComp);
-  }, [selectedComp]);
-
   const thisConfig = useMemo(() => {
     if (!selectedComp) return;
     const Component = typeMapCompoment[selectedComp.type];
     if (!Component) return;
-    return <Component props={selectedComp.props} />;
-  }, [selectedComp]);
+    return <Component onChange={onChange} selectedComp={selectedComp} />;
+  }, [onChange, selectedComp]);
 
   return (
     <Drawer
+      width={''}
       open={open}
       title="配置组件属性"
       destroyOnClose

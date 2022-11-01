@@ -250,7 +250,10 @@ const Comp: React.FC = () => {
         </div>
         <Menu />
         {getEditComponent()}
-        <Config selectedComp={selectedComp} />
+        <Config
+          selectedComp={selectedComp}
+          onChange={() => setComponents([...components])}
+        />
       </div>
     </DndProvider>
   );
